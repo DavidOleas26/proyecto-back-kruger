@@ -1,13 +1,15 @@
-import express, { json } from "express"; // require -> commonJS
+import express from "express";
 import { connectDB } from "./db/db.js";
+import flatRouter from "./routes/flat.router.js";
 import userRouter from "./routes/user.router.js";
 
 const app = express();
-app.use(json());
+app.use(express.json());
 app.disable("x-powered-by");
 
 connectDB();
 
+app.use("/flats", flatRouter);
 app.use("/users", userRouter);
 
 const PORT = process.env.PORT ?? 8080;
