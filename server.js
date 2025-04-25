@@ -1,11 +1,14 @@
-import express, { json } from 'express' // require -> commonJS
+import express from 'express' 
+import { connectDB } from './db/db.js'
+import flatRouter from './routes/flat.router.js'
 
 const app = express()
-app.use(json())
-app.use(corsMiddleware())
+app.use(express.json())
 app.disable('x-powered-by') 
 
+connectDB()
 
+app.use('/flats', flatRouter);
 
 const PORT = process.env.PORT ?? 8080
 
