@@ -1,9 +1,21 @@
 import { User } from "../models/user.model.js";
+import {
+  allUsers,
+  saveUser,
+  userById,
+  userUpdated,
+  userDeleted,
+} from "../services/user.service.js";
+import { validateUserSchema } from "../schemas/user.schema.js";
+import { validateUpdateUserSchema } from "../schemas/user.schema.js";
 
 const createUser = async (req, res) => {
   try {
-    const user = new User(req.body);
-    await user.save();
+    const { error, value } = validateUserSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    const user = await saveUser(req.body);
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -12,7 +24,7 @@ const createUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await allUsers();
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -21,7 +33,8 @@ const getAllUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const { id } = req.params;
+    const user = await userById(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -33,14 +46,13 @@ const getUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const userId = req.params.id;
-    const users = await User.findByIdAndUpdate(userId, req.body, {
-      new: true,
-    });
-    if (!users) {
-      return res.status(404).json({ error: "User not found" });
+    const { id } = req.params;
+    const { error, value } = validateUpdateUserSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
-    res.status(200).json(users);
+    const user = await userUpdated(id, req.body);
+    res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -48,11 +60,8 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    const userId = req.params.id;
-
-    const user = await User.findByIdAndUpdate(userId, {
-      deleted_at: new Date(),
-    });
+    const { id } = req.params;
+    const user = await userDeleted(id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
