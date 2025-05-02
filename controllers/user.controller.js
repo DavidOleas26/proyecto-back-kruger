@@ -1,26 +1,10 @@
-import { User } from "../models/user.model.js";
 import {
   allUsers,
-  saveUser,
   userById,
   userUpdated,
   userDeleted,
 } from "../services/user.service.js";
-import { validateUserSchema } from "../schemas/user.schema.js";
 import { validateUpdateUserSchema } from "../schemas/user.schema.js";
-
-const createUser = async (req, res) => {
-  try {
-    const { error, value } = validateUserSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-    const user = await saveUser(req.body);
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 const getAllUsers = async (req, res) => {
   try {
@@ -73,4 +57,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { createUser, getAllUsers, getUserById, updateUser, deleteUser };
+export { getAllUsers, getUserById, updateUser, deleteUser };

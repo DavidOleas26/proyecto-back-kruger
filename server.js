@@ -2,6 +2,7 @@ import express from "express";
 import { connectDB } from "./db/db.js";
 import flatRouter from "./routes/flat.router.js";
 import userRouter from "./routes/user.router.js";
+import authRouter from "./routes/auth.router.js";
 
 const app = express();
 app.use(express.json());
@@ -11,6 +12,7 @@ connectDB();
 
 app.use("/flats", flatRouter);
 app.use("/users", userRouter);
+app.use("/auth", authRouter);
 
 const PORT = process.env.PORT ?? 8080;
 
