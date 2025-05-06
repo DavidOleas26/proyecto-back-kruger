@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import configs from "../configs/configs.js";
 
 const authenticationMiddleware = (req, res, next) => {
-  const authHeader = req.headers("authorization");
+  const authHeader = req.header("authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     return res.status(401).json({ "Access Denied": "No token provided" });
@@ -14,6 +14,7 @@ const authenticationMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Invalid Token" });
   }
 };

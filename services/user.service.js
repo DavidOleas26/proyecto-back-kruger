@@ -25,7 +25,10 @@ const userUpdated = async (id, userToSave) => {
 };
 
 const userDeleted = async (id) => {
-  const user = await User.findByIdAndDelete(id);
+  const user = await User.findByIdAndUpdate(id, {
+    deleted_at: new Date(),
+  });
+
   if (!user) {
     return null;
   }

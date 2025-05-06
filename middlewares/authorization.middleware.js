@@ -12,4 +12,10 @@ const authorizationMiddleware = (roles) => (req, res, next) => {
   next();
 };
 
-export default authorizationMiddleware;
+const authUserMiddleware = (req, res, next) => {
+  if (req.params.id != req.user.userId && req.user.role != "admin")
+    return res.status(403).json({ message: "Access denied for User" });
+  next();
+};
+
+export { authorizationMiddleware, authUserMiddleware };
