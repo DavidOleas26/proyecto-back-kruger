@@ -1,38 +1,59 @@
 import { User } from "../models/user.model.js";
 
-const saveUser = async (userToSave) => {
-  const user = new User(userToSave);
-  await user.save();
-  return user;
-};
+export class UserService {
 
-const allUsers = async () => {
-  const users = await User.find({});
-  return users;
-};
-
-const userById = async (id) => {
-  const user = await User.findById(id);
-  return user;
-};
-
-const userUpdated = async (id, userToSave) => {
-  const user = await User.findByIdAndUpdate(id, userToSave, { new: true });
-  if (!user) {
-    return null;
+  static allUsers = async () => {
+    const users = await User.find({
+      deletedAt: null,
+    })
+    return users
   }
-  return user;
-};
 
-const userDeleted = async (id) => {
-  const user = await User.findByIdAndUpdate(id, {
-    deleted_at: new Date(),
-  });
-
-  if (!user) {
-    return null;
+  static userById = async (id) => {
+    const user = await User.findById(id)
+    if (!user) {
+      return false
+    }
+    return user
   }
-  return user;
-};
 
-export { saveUser, allUsers, userById, userUpdated, userDeleted };
+  static findByEmail = async (userEmail) => {
+    const user = await User.findOne({ "email": userEmail });
+    if (!user) {
+      return false
+    }
+    return user
+  }
+
+  static saveUser = async (userToSave) => {
+    const user = new User(userToSave)
+    await user.save()
+    return user
+  }
+
+  static userUpdated = async (id, userToSave) => {
+    userToSave.updatedAt = new Date();
+    const user = await User.findByIdAndUpdate(
+      id, 
+      userToSave, 
+      { new: true, runValidators: true }
+    )
+    if (!user) {
+      return null
+    }
+    return user
+  }
+
+  static userDeleted = async (id) => {
+    const user = await User.findByIdAndUpdate(
+      id, 
+      { deletedAt: Date.now() },
+      { new: true, runValidators: true }
+    )
+  
+    if (!user) {
+      return null
+    }
+    return user
+  }
+}

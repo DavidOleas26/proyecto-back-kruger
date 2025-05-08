@@ -1,27 +1,48 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
+const validateEmail = (email) => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  return emailRegex.test(email)
+}
+
+const validateBirthdate = (birthdate) => {
+  const currentDate = new Date()
+  const minYear = new Date( currentDate.getFullYear() - 18, currentDate.getMonth(), currentDate.getDay() )
+  return birthdate <= minYear
+}
+
 const userSchema = new mongoose.Schema({
-  first_name: {
+  firstName: {
     type: String,
-    required: true,
+    minlength: [2, 'First name must have at least 2 characters'],
+    required: [true, 'First name is required'],
   },
-  last_name: {
+  lastName: {
     type: String,
-    required: true,
+    minlength: [2, 'Last name must have at least 2 characters'],
+    required: [true, 'Last name is required'],
   },
   email: {
     type: String,
-    required: true,
+    required: [true, 'Email is required'],
     unique: true,
+    validate: {
+      validator: validateEmail,
+      message: props => `${props.value} is not a valid email address`
+    }
   },
   password: {
     type: String,
-    required: true,
+    required: [true, 'Password is required'],
   },
   birthdate: {
     type: Date,
-    required: true,
+    validate: {
+      validator: validateBirthdate,
+      message: props => `The user must be at least 18 years old.`
+    },
+    required: [true, 'Birthdate is required'],
   },
   role: {
     type: String,
@@ -37,15 +58,15 @@ const userSchema = new mongoose.Schema({
   //     },
   //   },
   // ],
-  create_at: {
+  createdAt: {
     type: Date,
     default: Date.now,
   },
-  update_at: {
+  updatedAt: {
     type: Date,
     default: null,
   },
-  deleted_at: {
+  deletedAt: {
     type: Date,
     default: null,
   },

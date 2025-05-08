@@ -25,7 +25,11 @@ export class FlatService {
   
   static updateFlat = async (flatId, flatToUpdate) => {
     flatToUpdate.updatedAt = Date.now();
-    const flat = await Flat.findByIdAndUpdate(flatId, flatToUpdate, { new: true, runValidators: true });
+    const flat = await Flat.findByIdAndUpdate(
+      flatId, 
+      flatToUpdate, 
+      { new: true, runValidators: true }
+    );
     if (!flat) {
       return false;
     }
@@ -33,7 +37,11 @@ export class FlatService {
   }
 
   static deleteFlat = async ( flatId ) => {
-    const flat = await Flat.findByIdAndUpdate(flatId, { deletedAt: Date.now() }, { new: true, runValidators: true });
+    const flat = await Flat.findByIdAndUpdate(
+      flatId, 
+      { deletedAt: Date.now() }, 
+      { new: true, runValidators: true }
+    )
     if (!flat) {
       return false;
     }

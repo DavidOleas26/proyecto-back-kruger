@@ -1,5 +1,5 @@
-import { validateFlatSchema, validateUpdateFlatSchema } from "../schemas/flat.schema.js";
 import { FlatService } from "../services/flat.service.js";
+import { validateFlatSchema, validateUpdateFlatSchema } from "../schemas/flat.schema.js";
 
 export class FlatController {
 

@@ -1,21 +1,17 @@
 import express from "express";
+import { UserController } from "../controllers/user.controller.js";
 
-import {
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-} from "../controllers/user.controller.js";
+// Middlewares authentication and authorization
 import authenticationMiddleware from "../middlewares/authentication.middleware.js";
 import { authUserMiddleware } from "../middlewares/authorization.middleware.js";
 
-const router = express.Router();
+const userRouter = express.Router();
 
-router.use(authenticationMiddleware);
+userRouter.use(authenticationMiddleware)
 
-router.get("/", authUserMiddleware, getAllUsers);
-router.get("/:id", getUserById);
-router.patch("/:id", authUserMiddleware, updateUser);
-router.delete("/:id", authUserMiddleware, deleteUser);
+userRouter.get("/", authUserMiddleware, UserController.getAllUsers);
+userRouter.get("/:id", UserController.getUserById);
+userRouter.patch("/:id", authUserMiddleware, UserController.updateUser);
+userRouter.delete("/:id", authUserMiddleware, UserController.deleteUser);
 
-export default router;
+export default userRouter;
