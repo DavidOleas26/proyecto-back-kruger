@@ -1,44 +1,66 @@
 import mongoose from "mongoose";
 
+const validateYearBuilt = (yearBuilt) => {
+  const currentDate = new Date()
+  return yearBuilt <= currentDate
+}
+
+const validateDateAvailable = (dateAvailable) => {
+  const currentDate = new Date()
+  return dateAvailable >= currentDate
+}
+
 const flatSchemma = new mongoose.Schema({
   city: {
     type: String,
-    required: true,
+    minlength: [2, 'City name must have at least 2 characters'],
+    required: [true, 'City name is required'],
   },
   streetName: {
     type: String,
-    required: true,
+    minlength: [1, 'City name must have at least 1 character'],
+    required: [true, 'Street name is required'],
   },
   streetNumber: {
     type: Number,
-    min: [0, "Street Number no puede ser menor a cero"],
-    required: true,
+    min: [0, "Street Number can not be less than zero"],
+    required: [true, 'Street number is required'],
   },
   areaSize: {
     type: Number,
-    min: [0, "Area size no puede ser menor a cero"],
-    required: true,
+    min: [0, "Area size can not be less than zero"],
+    required: [true, 'Area size is required'],
   },
   hasAc: {
     type: Boolean,
-    required: true
+    required: [true, 'Ac is required'],
   },
   yearBuilt: {
     type: Date,
+    validate: {
+      validator: validateYearBuilt,
+      message: props => `The year of construction cannot be later than the current date.`
+    },
+    required: [true, 'Year of construction is required'],
   },
   rentPrice: {
     type: Number,
-    min: [0, "Rent price can't be 0"],
-    required: true
+    min: [0, "Rent price can not be  less than 0"],
+    required: [true, 'Rent Price is required'],
   },
   dateAvailable : {
     type: Date,
+    validate: {
+      validator: validateDateAvailable,
+      message: props => `Available dates cannot be earlier than the current date.`
+    },
+    required: [true, 'Date Available is required'],
   },
-  // ownerId: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "users",
-  //   required: true
-  // },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true
+  },
   createdAt : {
     type: Date,
     default: Date.now,

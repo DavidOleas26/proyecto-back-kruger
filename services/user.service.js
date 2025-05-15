@@ -10,7 +10,7 @@ export class UserService {
   }
 
   static userById = async (id) => {
-    const user = await User.findById(id)
+    const user = await User.findOne({ _id: id, deletedAt: null });
     if (!user) {
       return false
     }
@@ -18,7 +18,7 @@ export class UserService {
   }
 
   static findByEmail = async (userEmail) => {
-    const user = await User.findOne({ "email": userEmail });
+    const user = await User.findOne({ email: userEmail, deletedAt: null });
     if (!user) {
       return false
     }
