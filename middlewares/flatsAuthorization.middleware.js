@@ -2,16 +2,6 @@ import { FlatService } from "../services/flat.service.js"
 
 export class AuthorizationMiddleware {
 
-  static authUserMiddleware = (req, res, next) => {
-    if (!req.user || !req.user.role) {
-      return res.status(401).json({ message: "Access Denied: No role provided" })
-    }
-  
-    if (req.params.id != req.user.userId && req.user.role != "admin") 
-      return res.status(403).json({ message: "Access denied for User" })
-    next()
-  }
-  
   static flatCreatioMiddleware = (req, res, next) => {
     const { userId } = req.user
     const { ownerId } = req.body
@@ -31,10 +21,10 @@ export class AuthorizationMiddleware {
           return res.status(404).send({ message: "Flat not found" })
         }
         
-        if (flat.ownerId != userId) {
+        if (flat.ownerId._id.toString() !== userId.toString()) {
           return res.status(403).json({ message: "Access denied for User" })
         }
-  
+        req.flat = flat;
         next()
     } catch (error) {
       return res.status(403).json({ message: "Access denied for User" })

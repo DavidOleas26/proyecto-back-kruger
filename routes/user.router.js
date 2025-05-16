@@ -3,7 +3,7 @@ import { UserController } from "../controllers/user.controller.js";
 
 // Middlewares authentication and authorization
 import authenticationMiddleware from "../middlewares/authentication.middleware.js";
-import { AuthorizationMiddleware } from "../middlewares/authorization.middleware.js";
+import { AuthorizationMiddleware } from "../middlewares/userAuthorization.middleware.js";
 
 const userRouter = express.Router();
 

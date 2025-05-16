@@ -49,15 +49,6 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
-  // favorite_flats: [
-  //   {
-  //     flat: {
-  //       type: mongoose.Schema.Types.ObjectId,
-  //       ref: "flats",
-  //       required: true,
-  //     },
-  //   },
-  // ],
   createdAt: {
     type: Date,
     default: Date.now,

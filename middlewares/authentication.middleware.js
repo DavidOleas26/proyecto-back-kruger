@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import configs from "../configs/configs.js";
+import { UserService } from "../services/user.service.js";
 
-const authenticationMiddleware = (req, res, next) => {
+const authenticationMiddleware = async(req, res, next) => {
   const authHeader = req.header("authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer")) {
@@ -11,6 +12,12 @@ const authenticationMiddleware = (req, res, next) => {
   try {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, configs.JWT_SECRET);
+
+    const user = await UserService.userById(decoded.userId)
+    if (!user) {
+      return res.status(404).json({ error: "User does not exist" })
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

@@ -10,7 +10,7 @@ const validateDateAvailable = (dateAvailable) => {
   return dateAvailable >= currentDate
 }
 
-const flatSchemma = new mongoose.Schema({
+const flatSchema = new mongoose.Schema({
   city: {
     type: String,
     minlength: [2, 'City name must have at least 2 characters'],
@@ -75,4 +75,4 @@ const flatSchemma = new mongoose.Schema({
   },
 })
 
-export const Flat = mongoose.model("flats", flatSchemma)
+export const Flat = mongoose.model("flats", flatSchema)
