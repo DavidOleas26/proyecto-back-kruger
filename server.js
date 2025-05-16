@@ -15,7 +15,7 @@ connectDB();
 app.use("/flats", flatRouter);
 app.use("/users", userRouter);
 app.use("/auth", authRouter);
-app.use("/favorite_flats", favoriteFlatsRouter)
+app.use("/favorite-flats", favoriteFlatsRouter)
 
 const PORT = process.env.PORT ?? 8080;
 

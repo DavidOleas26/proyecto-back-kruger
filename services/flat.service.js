@@ -9,6 +9,16 @@ export class FlatService {
     return flats
   }
 
+  static getFlatsWithFilters = async ({queryObject, selected, sort, limit, skip}) => {
+    const flats = await Flat.find(queryObject)
+      .select(selected)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+    
+      return flats
+  }
+
   static getFlatById = async ( flatId ) => {
     const flat = await Flat.findOne({ _id: flatId, deletedAt: null }).populate("ownerId");
     if (!flat) {

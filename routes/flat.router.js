@@ -12,6 +12,7 @@ flatRouter.use(authenticationMiddleware)
 
 // Rutas Endpoints Flats
 flatRouter.get('/', FlatController.getAllFlats)
+flatRouter.get('/by-filters', FlatController.getFlatsByfilters)
 flatRouter.get('/:id', FlatController.getFlatById)
 flatRouter.post('/', AuthorizationMiddleware.flatCreatioMiddleware, FlatController.addFlat)
 flatRouter.patch('/:id', AuthorizationMiddleware.flatOwnerMiddleware, FlatController.updateFlat)
