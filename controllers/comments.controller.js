@@ -32,5 +32,15 @@ export class CommentController {
       res.status(500).json({message: error.message})
     }
   }
+
+  static getUserMessages = async (req, res) => {
+    try {
+      const {userId} = req.params
+      const comments = await CommentService.getAllUserComments(userId);
+      res.status(200).json(comments);
+    } catch (error) {
+      res.status(500).json({message: error.message})
+    }
+  }
   
 }

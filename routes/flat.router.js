@@ -21,5 +21,6 @@ flatRouter.delete('/:id', AuthorizationMiddleware.flatOwnerMiddleware, FlatContr
 // EndPoints Comments
 flatRouter.post('/:flatId/comments', commentMiddleware.usersAllowedToComment, CommentController.createComment)
 flatRouter.get('/:flatId/comments', commentMiddleware.flatOwnerCommentsMiddleware, CommentController.getAllCommentsOwner)
+flatRouter.get('/:userId/user-comments', commentMiddleware.userOwnerMessages ,CommentController.getUserMessages)
 
 export default flatRouter

@@ -72,4 +72,15 @@ export class AuthorizationMiddleware {
       }
     
   }
+
+  static userOwnerMessages = async (req, res, next) => {
+    const { ownerId } = req.params
+    const { userId } = req.user
+    
+    if (ownerId != userId) {
+      return res.status(403).json({ message: "Access denied for User" })
+    }
+
+    next()
+  }
 }

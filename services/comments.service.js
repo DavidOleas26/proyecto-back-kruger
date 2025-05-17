@@ -29,6 +29,20 @@ export class CommentService{
       return comments;
   }
 
+    static getAllUserComments = async (senderId) => {
+      const comments = await Comment.find({ senderId, parentId: null })
+      .populate('senderId', 'email')
+      .lean();
+  
+      for (let comment of comments) {
+        comment.replies = await Comment.find({ parentId: comment._id })
+        .populate('senderId', 'email')
+        .lean();
+    }
+  
+      return comments;
+  }
+
 }
 
 
