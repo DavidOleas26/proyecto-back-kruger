@@ -13,7 +13,7 @@ export class AuthService {
       },
       configs.JWT_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: "6h",
       }
     )
 

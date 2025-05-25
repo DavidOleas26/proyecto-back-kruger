@@ -46,8 +46,16 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin"],
+    enum: {
+      values: ['user', 'admin'],
+      message: 'Role must be "user" or "admin".'
+    },
     default: "user",
+  },
+  flatsCounter: {
+    type: Number,
+    min: [0, "The number of flats can not be less than zero"],
+    default: 0
   },
   createdAt: {
     type: Date,

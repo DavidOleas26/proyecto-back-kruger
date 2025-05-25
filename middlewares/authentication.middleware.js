@@ -6,7 +6,7 @@ const authenticationMiddleware = async(req, res, next) => {
   const authHeader = req.header("authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer")) {
-    return res.status(401).json({ "Access Denied": "No token provided" });
+    return res.status(401).json({ error: "Access denied. Token not provided." });
   }
 
   try {
@@ -15,14 +15,13 @@ const authenticationMiddleware = async(req, res, next) => {
 
     const user = await UserService.userById(decoded.userId)
     if (!user) {
-      return res.status(404).json({ error: "User does not exist" })
+      return res.status(401).json({ error: "Authentication failed. User not found." });
     }
 
     req.user = decoded;
     next();
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Invalid Token" });
+    return res.status(401).json({ error: "Invalid or expired token." });
   }
 };
 

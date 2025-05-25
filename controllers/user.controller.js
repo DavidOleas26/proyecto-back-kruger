@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { UserService } from "../services/user.service.js";
 import { validateUpdateUserSchema } from "../schemas/user.schema.js";
 
@@ -5,9 +6,16 @@ export class UserController {
 
   static getAllUsers = async (req, res) => {
     try {
-      const users = await UserService.allUsers()
-      res.status(200).json(users)
+      const { query, pagination, sort } = req.queryParams;
+
+      const result = await UserService.allUsers({query, pagination, sort})
+      res.status(200).json({
+        success: true,
+        data: result.users,
+        pagination: result.pagination
+      });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: error.message })
     }
   }
@@ -15,6 +23,10 @@ export class UserController {
   static getUserById = async (req, res) => {
     try {
       const { id } = req.params
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
       const user = await UserService.userById(id)
       if (!user) {
         return res.status(404).json({ error: "User not found" })
@@ -33,8 +45,19 @@ export class UserController {
       }
   
       const { id } = req.params
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      if ( req.body?.email ) {
+        const { email } = req.body
+        const repeatedEmail = await UserService.findByEmail(email)
+        if ( repeatedEmail && repeatedEmail._id.toString() !== req.params.id ) {
+          return res.status(409).json({ error: "Email is already in use" });
+        }
+      }
+
       const user = await UserService.userUpdated(id, req.body)
-  
       if ( !user ) {
         return res.status(404).json({message: "User not found"})
       }
@@ -47,9 +70,12 @@ export class UserController {
 
   static deleteUser = async (req, res) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
       const user = await UserService.userDeleted(id)
-  
       if (!user) {
         return res.status(404).json({ error: "User not found" })
       }

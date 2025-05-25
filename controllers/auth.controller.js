@@ -6,16 +6,23 @@ export class AuthController {
 
   static register = async (req, res) => {
     try {
-  
+      
+      if (req.body?.role) {
+          return res.status(400).json({error: 'Invalid Fields'});
+      }
+
       const { error, value } = validateUserSchema.validate(req.body)
       if (error) {
         return res.status(400).json({ error: error.details[0].message })
       }
   
       const user = await UserService.saveUser(req.body)
-      res.status(201).json(user)
+      res.status(201).json({message: "User created successfully", user})
   
     } catch (error) {
+      if (error.code === 11000 && error.keyPattern?.email) {
+        return res.status(400).json({ error: 'This email address is already in use' });
+      }
       res.status(500).json({ error: error.message })
     }
   }
@@ -24,10 +31,19 @@ export class AuthController {
     try {
       
       const { email, password } = req.body;
-  
+
+      if ( !email || !password ) {
+        return res.status(400).json({ error: "Credentials Required" })
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid Credentials" });
+      }
+
       const user = await UserService.findByEmail(email)
       if (!user) {
-        return res.status(404).json({ error: "User not found" })
+        return res.status(401).json({ error: "Invalid credentials" })
       }
   
       const isMatch = await user.comparePassword(password);
@@ -36,7 +52,7 @@ export class AuthController {
       }
   
       const userToken = AuthService.getToken(user)
-      res.json({ userToken })
+      res.json({ token: userToken })
   
     } catch (error) {
       console.log(error)
