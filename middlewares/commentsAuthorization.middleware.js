@@ -34,7 +34,6 @@ export class AuthorizationMiddleware {
       const isUserAllowedComment = parentComment.senderId.toString() === senderId.toString()
       const isFlatOwner = flat.ownerId._id.toString() === senderId.toString()
 
-      console.log(isFlatOwner, flat.ownerId._id.toString(), senderId.toString())
       if (!isUserAllowedComment && !isFlatOwner) {
         return res.status(403).json({ message: "You are not authorized to reply to this comment" });
       }

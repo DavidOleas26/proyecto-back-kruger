@@ -110,7 +110,7 @@ const validateUpdateUserSchema = joi.object({
 });
 
 const validateUserQuerySchema = joi.object({
-role: joi.string()
+  role: joi.string()
     .valid("admin", "user")
     .messages({
       "any.only": "El rol debe ser 'admin' o 'user'",

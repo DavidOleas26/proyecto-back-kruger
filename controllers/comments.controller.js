@@ -5,7 +5,6 @@ export class CommentController {
   static createComment = async (req, res) => {
   
     try {
-      console.log(req.comment)
       const { error, value } = validateCommentSchema.validate(req.comment)
   
       if (error) {

@@ -55,7 +55,6 @@ export class AuthController {
       res.json({ token: userToken })
   
     } catch (error) {
-      console.log(error)
       res.status(500).json({ error: error.message });
     }
   }

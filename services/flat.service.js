@@ -1,76 +1,128 @@
+import mongoose from "mongoose";
 import { Flat } from "../models/flat.model.js";
+import { User } from "../models/user.model.js";
 
 export class FlatService {
 
-  static getAllFlats = async () => {
-    const flats = await Flat.find({
-      deletedAt: null
-    }).populate("ownerId")
-    return flats
-  }
-
-  static getFlatsWithFilters = async ({queryObject, selected, sort, limit, skip}) => {
-    const flats = await Flat.find(queryObject)
-      .select(selected)
+  static getAllFlats = async ({query, pagination, sort}) => {
+    const flats = await Flat.find(query)
+      .collation({ locale: 'es', strength: 1 }) // orden insensible a mayuculas y minusculas
+      .populate("ownerId", "firstName lastName email deletedAt")
       .sort(sort)
-      .skip(skip)
-      .limit(limit)
+      .skip(pagination.skip)
+      .limit(pagination.limit)
     
-      return flats
+    const filteredFlats = flats.filter(flat => flat.ownerId && flat.ownerId.deletedAt === null)
+
+    const allFlats = await Flat.find(query)
+      .populate("ownerId", "deletedAt")
+      .lean();
+    const validFlatsCount = allFlats.filter(flat => flat.ownerId && flat.ownerId.deletedAt === null).length;
+
+    return {
+      flats: filteredFlats,
+      pagination: {
+        total: validFlatsCount,
+        page: pagination.page,
+        limit: pagination.limit,
+        totalPages: Math.ceil(validFlatsCount / pagination.limit),
+        hasMore: pagination.page * pagination.limit < validFlatsCount
+      }
+    }
   }
 
   static getFlatById = async ( flatId ) => {
-    const flat = await Flat.findOne({ _id: flatId, deletedAt: null }).populate("ownerId");
-    if (!flat) {
-      return false
-    }
-
-    if (flat.ownerId?.deletedAt != null) {
-      return false
-    }
-
+    const flat = await Flat.findOne({ _id: flatId, deletedAt: null })
+      .populate("ownerId", "firstName lastName email deletedAt")
+      .lean()
+    
+    if (!flat || flat.ownerId?.deletedAt != null) {
+      return null
+    } 
     return flat
   }
 
   static saveFlat = async (flatToSave) => {
-    const flat = new Flat(flatToSave);
-    await flat.save();
-    return flat;
+    const session = await mongoose.startSession()
+    try {
+      session.startTransaction()
+      const flat = new Flat(flatToSave)
+      await flat.save({ session })
+
+      const { ownerId } = flatToSave
+      const user = await User.findByIdAndUpdate(
+        ownerId, 
+        { $inc: { flatsCounter: 1 } },
+        { session, new: true }
+      )
+
+      if (!user) {
+        throw new Error("Owner not found");
+      }
+
+      await session.commitTransaction()
+      return flat.toObject()
+
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
   
   static updateFlat = async (flatId, flatToUpdate) => {
     flatToUpdate.updatedAt = Date.now();
-    const flat = await Flat.findByIdAndUpdate(
-      flatId, 
-      flatToUpdate, 
+
+    const flat = await Flat.findOneAndUpdate(
+      { _id: flatId, deletedAt: null },
+      flatToUpdate,
       { new: true, runValidators: true }
-    ).populate("ownerId")
+    ).populate("ownerId", "firstName lastName email deletedAt").lean();
 
-    if (!flat) {
-      return false;
+    if (!flat || flat.ownerId?.deletedAt != null) {
+      return null;
     }
-
-    if (flat.ownerId?.deletedAt != null) {
-      return false
-    }
+    
     return flat;
   }
 
   static deleteFlat = async ( flatId ) => {
-    const flat = await Flat.findByIdAndUpdate(
-      flatId, 
-      { deletedAt: Date.now() }, 
-      { new: true, runValidators: true }
-    ).populate("ownerId")
-    
-    if (!flat) {
-      return false;
-    }
+    const session = await mongoose.startSession()
+    try {
+      session.startTransaction()
 
-    if (flat.ownerId?.deletedAt != null) {
-      return false
+      const flat = await Flat.findOneAndUpdate(
+        { _id: flatId, deletedAt: null }, 
+        { deletedAt: new Date() }, 
+        { new: true, runValidators: true, session }
+      ).populate("ownerId", "firstName lastName email deletedAt").lean()
+      
+      if (!flat || flat.ownerId?.deletedAt != null) {
+        throw new Error("Flat not found or owner deleted");
+      }
+
+      const ownerId  = flat.ownerId._id
+      const user = await User.findByIdAndUpdate(
+        ownerId, 
+        { $inc: { flatsCounter: -1 } },
+        { session, new: true }
+      )
+
+      if (!user) {
+        throw new Error("Owner not found");
+      }
+      
+      await session.commitTransaction()
+      return flat;
+
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+
+    } finally {
+      session.endSession();
     }
-    return flat;
   }
 
 }

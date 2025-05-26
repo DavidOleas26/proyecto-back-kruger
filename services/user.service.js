@@ -1,9 +1,12 @@
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
+import { Flat } from "../models/flat.model.js";
 
 export class UserService {
 
   static allUsers = async ({query, pagination, sort}) => {
     const users = await User.find(query)
+      .collation({ locale: 'es', strength: 1 }) // orden insensible a mayuculas y minusculas
       .sort(sort)
       .skip(pagination.skip)
       .limit(pagination.limit)
@@ -71,16 +74,34 @@ export class UserService {
   }
 
   static userDeleted = async (id) => {
-      const user = await User.findOne({ _id: id, deletedAt: null })
+    const session = await mongoose.startSession()
+    try {
+      session.startTransaction()
+
+      const user = await User.findOneAndUpdate(
+        {_id: id, deletedAt: null},
+        { deletedAt: new Date() },
+        { new: true, runValidators: true, session }
+      ).select('-password').lean()
+
       if (!user) {
-        return null
+        throw new Error("User not found");
       }
 
-      user.deletedAt = Date.now()
-      await user.save()
+      await Flat.updateMany(
+        { ownerId: id, deletedAt: null },
+        { deletedAt: new Date() },
+        { session }
+      );
 
-      const userObj = user.toObject()
-      delete userObj.password
-      return userObj
+      await session.commitTransaction();
+      return user 
+
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }
