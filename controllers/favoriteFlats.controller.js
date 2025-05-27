@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import { FavoriteFlatService } from "../services/favoriteFlats.service.js"
 import { FlatService } from "../services/flat.service.js"
 
@@ -8,8 +9,12 @@ export class FavoritesFlatsController {
       const { flatId } = req.params
       const { userId } = req.user
 
+      if (!mongoose.Types.ObjectId.isValid(flatId) || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid flat or user ID" });
+      }
+
       const flat = await FlatService.getFlatById(flatId)
-      if (!flat) {
+      if (!flat || flat.deletedAt != null) {
         return res.status(404).json({ message: "Flat not found" });
       }
 
@@ -31,6 +36,10 @@ export class FavoritesFlatsController {
       const { flatId } = req.params;
       const { userId } = req.user;
 
+      if (!mongoose.Types.ObjectId.isValid(flatId) || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid flat or user ID" });
+      }
+
       const favoriteFlat = await FavoriteFlatService.getFavoriteFlat({ flatId, userId })
       if (!favoriteFlat) {
         return res.status(404).json({ message: "Favorite flat not found" });
@@ -47,8 +56,12 @@ export class FavoritesFlatsController {
   static getAllFavoriteFlats = async (req, res) => {
     try {
       const { userId } = req.user
-      const favoriteFlats= await FavoriteFlatService.getOwnerFavoriteFlats(userId)
-      
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid flat or user ID" });
+      }
+
+      const page = Math.max(Number(req.query.page) || 1 ,1)
+      const favoriteFlats= await FavoriteFlatService.getOwnerFavoriteFlats({ userId, page })
       if (favoriteFlats.length === 0) {
         return res.status(404).json({ message: "No favorite flats found" });
       }

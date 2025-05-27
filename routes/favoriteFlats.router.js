@@ -7,8 +7,8 @@ const favoriteFlatsRouter = express.Router()
 favoriteFlatsRouter.use(authenticationMiddleware);
 
 // endpoints Favorite flats (get all favorite, addFavorite, deleteFavorite)
+favoriteFlatsRouter.get('/', FavoritesFlatsController.getAllFavoriteFlats)
 favoriteFlatsRouter.post('/:flatId', FavoritesFlatsController.addFavoriteFlat)
 favoriteFlatsRouter.delete('/:flatId', FavoritesFlatsController.removeFavoriteFlat)
-favoriteFlatsRouter.get('/', FavoritesFlatsController.getAllFavoriteFlats)
 
 export default favoriteFlatsRouter

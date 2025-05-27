@@ -5,14 +5,14 @@ export class FavoriteFlatService {
   static addFlat = async (flatToSave) => {
     const favoriteFlat = new FavoriteFlat(flatToSave)
     await favoriteFlat.save()
-    return favoriteFlat
+    return favoriteFlat.toObject()
   }
 
   static getFavoriteFlat = async ({flatId, userId}) => {
-    const favoriteFlat = await FavoriteFlat.findOne({ flatId, userId });
+    const favoriteFlat = await FavoriteFlat.findOne({ flatId, userId }).lean()
   
     if (!favoriteFlat) {
-      return false
+      return null
     }
 
     return favoriteFlat
@@ -22,12 +22,35 @@ export class FavoriteFlatService {
     await FavoriteFlat.deleteOne({ _id: favoriteFlatId })
   }
 
-  static getOwnerFavoriteFlats = async (userId) => {
+  static getOwnerFavoriteFlats = async ({ userId, page }) => {
+    const limit = 10
+    const skip = (page - 1)* limit
+
     const favoriteFlats = await FavoriteFlat.find({ userId })
-      // .populate('flatId', 'title description price location') // Puedes agregar más campos si lo deseas
-      .sort({ createdAt: -1 }) // Ordenar del más reciente al más antiguo
+      .populate({
+        path: 'flatId',
+        populate: {
+          path: 'ownerId',
+          select: 'firstName lastName email'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean();
     
-  return favoriteFlats
+    const total = await FavoriteFlat.countDocuments({ userId })
+    
+    return {
+      favoriteFlats,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasMore: page * limit < total
+      }
+    }
+
   }
 }

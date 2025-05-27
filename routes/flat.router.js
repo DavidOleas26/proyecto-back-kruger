@@ -17,6 +17,7 @@ flatRouter.get('/',
   FlatsMiddleware.buildQueryMiddleware, 
   FlatController.getAllFlats
 )
+flatRouter.get('/my-flats', FlatController.getAllMyFlats)
 flatRouter.get('/:id', FlatController.getFlatById)
 flatRouter.post('/', FlatController.addFlat)
 flatRouter.patch('/:id', AuthorizationMiddleware.flatOwnerMiddleware, FlatController.updateFlat)

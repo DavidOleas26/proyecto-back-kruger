@@ -20,6 +20,22 @@ export class FlatController {
     }
   }
 
+  static getAllMyFlats = async (req, res) => {
+    try {
+      const { userId } = req.user
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const page = Math.max(Number(req.query.page) || 1, 1);
+      const flats = await FlatService.getAllOwnerFlats({ userId, page })
+      
+      res.status(200).json(flats);
+    } catch (error) {
+      res.status(500).json({message: error.message})
+    }
+  }
+
   static getFlatById = async (req, res) => {
     try {
       const { id } = req.params

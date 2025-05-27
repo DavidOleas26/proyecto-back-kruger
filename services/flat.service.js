@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Flat } from "../models/flat.model.js";
 import { User } from "../models/user.model.js";
+import { FavoriteFlat } from "../models/favoriteFlats.model.js";
 
 export class FlatService {
 
@@ -29,6 +30,30 @@ export class FlatService {
         hasMore: pagination.page * pagination.limit < validFlatsCount
       }
     }
+  }
+
+  static getAllOwnerFlats = async ({ userId, page }) => {
+    const limit = 10
+    const skip = (page - 1) * limit
+
+    const flats = await Flat.find({ ownerId: userId, deletedAt: null })
+      .sort({ createdAt: -1 })  
+      .skip(skip)
+      .limit(limit)
+      .lean()
+    
+    const total = await Flat.countDocuments({ ownerId: userId, deletedAt: null })
+
+      return {
+        flats,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          hasMore: page * limit < total
+        }
+      };
   }
 
   static getFlatById = async ( flatId ) => {
@@ -112,6 +137,10 @@ export class FlatService {
       if (!user) {
         throw new Error("Owner not found");
       }
+
+      await FavoriteFlat.deleteMany(
+        {flatId: flatId}
+      ).session(session)
       
       await session.commitTransaction()
       return flat;
