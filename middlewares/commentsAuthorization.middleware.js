@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import { FlatService } from "../services/flat.service.js"
 import { CommentService } from "../services/comments.service.js"
 
@@ -9,6 +10,14 @@ export class AuthorizationMiddleware {
       const { flatId } = req.params
       const senderId = req.user?.userId
       const { content, parentId } = req.body
+
+      if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(flatId)) {
+        return res.status(400).json({ error: "Invalid user or flat ID" });
+      }
+
+      if ( parentId && !mongoose.Types.ObjectId.isValid(parentId)) {
+        return res.status(400).json({ error: "Invalid comment ID" });
+      }
 
       const flat = await FlatService.getFlatById(flatId)
       if (!flat) {
@@ -56,6 +65,10 @@ export class AuthorizationMiddleware {
       const { userId } = req.user
     
       try {
+        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(flatId)) {
+          return res.status(400).json({ error: "Invalid user or flat ID" });
+        }
+
         const flat = await FlatService.getFlatById(flatId)
           if (!flat) {
             return res.status(404).send({ message: "Flat not found" })
@@ -64,7 +77,7 @@ export class AuthorizationMiddleware {
           if (flat.ownerId._id.toString() !== userId.toString()) {
             return res.status(403).json({ message: "Access denied for User" })
           }
-          req.flat = flat;
+
           next()
       } catch (error) {
         return res.status(403).json({ message: "Access denied for User" })
@@ -73,10 +86,14 @@ export class AuthorizationMiddleware {
   }
 
   static userOwnerMessages = async (req, res, next) => {
-    const { ownerId } = req.params
     const { userId } = req.user
+    const userIdParams = req.params.userId
+
+    if (!mongoose.Types.ObjectId.isValid(userIdParams)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
     
-    if (ownerId != userId) {
+    if (userIdParams != userId) {
       return res.status(403).json({ message: "Access denied for User" })
     }
 

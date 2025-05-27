@@ -6,11 +6,10 @@ export class CommentController {
   
     try {
       const { error, value } = validateCommentSchema.validate(req.comment)
-  
       if (error) {
         return res.status(400).json({message: error.details[0].message})
       }
-  
+
       const comment = await CommentService.saveComment(req.comment)
       res.status(201).json(comment)
   
@@ -24,7 +23,6 @@ export class CommentController {
       
       const { flatId } = req.params;
       const comments = await CommentService.getAllComments(flatId);
-  
       res.status(200).json(comments);
   
     } catch (error) {
@@ -34,9 +32,11 @@ export class CommentController {
 
   static getUserMessages = async (req, res) => {
     try {
+      
       const {userId} = req.params
       const comments = await CommentService.getAllUserComments(userId);
       res.status(200).json(comments);
+
     } catch (error) {
       res.status(500).json({message: error.message})
     }

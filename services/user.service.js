@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { Flat } from "../models/flat.model.js";
 import { FavoriteFlat } from "../models/favoriteFlats.model.js";
+import { Comment } from "../models/comments.model.js";
 
 export class UserService {
 
@@ -97,6 +98,10 @@ export class UserService {
 
       await FavoriteFlat.deleteMany(
         {userId: id}
+      ).session(session)
+
+      await Comment.deleteMany(
+        { senderId : id }
       ).session(session)
 
       await session.commitTransaction();
