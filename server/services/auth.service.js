@@ -16,19 +16,6 @@ export class AuthService {
         expiresIn: "6h",
       }
     )
-
-    // const refreshToken = jwt.sign(
-    //   {
-    //     userId: user._id,
-    //     role: user.role,
-    //     userName: user.firstName,
-    //     userLastName: user.lastName,
-    //   },
-    //   configs.REFRESH_TOKEN,
-    //   {
-    //     expiresIn: "1d",
-    //   }
-    // )
     return token
   }
 
