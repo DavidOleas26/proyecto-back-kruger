@@ -17,7 +17,18 @@ export class AuthController {
       }
   
       const user = await UserService.saveUser(req.body)
-      res.status(201).json({message: "User created successfully", user})
+      const userToken = AuthService.getToken(user)
+      
+      res.status(201).json({
+        message: "User created successfully", 
+        user: {
+          userId: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }, 
+        token: userToken
+      })
   
     } catch (error) {
       if (error.code === 11000 && error.keyPattern?.email) {
@@ -52,7 +63,15 @@ export class AuthController {
       }
   
       const userToken = AuthService.getToken(user)
-      res.json({ token: userToken })
+      res.json({ 
+        token: userToken,
+        user: {
+          userId: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        } 
+      })
   
     } catch (error) {
       res.status(500).json({ error: error.message });

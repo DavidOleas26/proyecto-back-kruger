@@ -1,22 +1,29 @@
 // React Hooks
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
+import { useAuth } from "../../context/AuthContext";
 // Libreria de componentes
 import { InputText } from "primereact/inputtext";
 import { FloatLabel } from "primereact/floatlabel";
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Password } from 'primereact/password';
-import { Divider } from 'primereact/divider';
 // importar los servicios de usario para crear usuario en firebase
 import { UserService } from "../../services/user/user";
 import { LocalStorageService } from "../../services/localStorage/localStorage";
+// Axios
+import axios from "axios";
+// Libreria de alertas
+import Swal from "sweetalert2";
 
+// eslint-disable-next-line react/prop-types
 export const UserForm = ({id}) => {
   let typeForm = id ? 'update' : 'create';
-  const navigate = useNavigate();
+  const navigation = useNavigate();
   
+  // Context
+  const { login } = useAuth();
+  // Form Inputs
   const [password, setPassword] = useState('');
   const [confirmpassword, setConfirmPassword] = useState('');
   const firstNameRef = useRef();
@@ -24,16 +31,34 @@ export const UserForm = ({id}) => {
   const [date, setDate] = useState(null);
   const emailRef = useRef();
   
-  const [user, setUser] = useState({ firstName: '', lastName: '', birthDate: '', email: '', password: '' });
+  const [user, setUser] = useState(
+    { 
+      firstName: '', 
+      lastName: '', 
+      birthdate: '', 
+      email: '', 
+      password: '' 
+    }
+  );
   const userService = new UserService();
   const localStorageService = new LocalStorageService();
 
-  useEffect(() => { if (typeForm === 'update') getUser(); }, []);
-  useEffect(() => { if (user.birthDate) setDate(convertFireBaseDate(user.birthDate)); }, [user.birthDate]);
+  useEffect(() => { 
+    if (typeForm === 'update') {
+      getUser()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => { 
+    if (user.birthdate) {
+      setDate(convertFireBaseDate(user.birthdate))
+    }; 
+  }, [user.birthdate]);
 
   const getUser = async () => {
     const resultUser = await userService.getUser(id);
-    if (!resultUser.data) navigate('/');
+    if (!resultUser.data) navigation('/');
     setUser(resultUser.data);
   };
 
@@ -41,28 +66,51 @@ export const UserForm = ({id}) => {
     event.preventDefault();
     
     if (!validateForm()) return;
-    
+
+    const firstName = firstNameRef.current?.value
+    const firstNameCapitalized = firstName.charAt(0).toUpperCase() + firstName.slice(1)
+
+    const lastName = lastNameRef.current?.value
+    const lastNameCapitalized = lastName.charAt(0).toUpperCase() + lastName.slice(1)
+
     const newUser = {
-        firstName: firstNameRef.current?.value,
-        lastName: lastNameRef.current?.value,
-        birthDate: date,
+        firstName: firstNameCapitalized,
+        lastName: lastNameCapitalized,
+        birthdate: date,
         email: emailRef.current?.value,
-        password: password,
-        role: 'user',
-        numberOfFlats: 0,
+        password: password
     };
     
     let result;
     if (typeForm === 'create') {
-      result = await userService.createUser(newUser);
-      if (result.data) localStorageService.addLoggedUser(result.data);
-    } else {
+      try {
+        const response = await axios.post('http://localhost:8080/auth/register', newUser)
+        const { token, user, message } = response.data
+        login({token, user})
+        Swal.fire({
+            icon: 'success',
+            title: 'Welcome!',
+            showConfirmButton: false,
+            text: message,
+            timer: 1500,
+        });
+        setTimeout(() => {
+            navigation('/');
+        }, 1500);
+      } catch (error) {
+        const errorMessage = error.response.data.error
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorMessage,
+        });
+      }
+
+    } else if (typeForm === 'update'){
       result = await userService.updateUser(newUser, id);
       localStorageService.updateLoggedUser(result.data);
     }
-    
-    Swal.fire({ icon: result.data ? 'success' : 'error', title: result.message });
-    if (result.data) navigate('/');
+
   };
 
   const validateForm = () => {
@@ -92,20 +140,38 @@ export const UserForm = ({id}) => {
 
     // Si la fecha de nacimiento aún no ha cumplido este año, restamos 1 a la edad
     if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-      return age >= 18;
+      return (age - 1) >= 18;
     }
     return age >= 18;
   };
 
   return (
     <form className={`mt-5 w-11/12 grid grid-cols-1 justify-items-center items-center gap-7 ${typeForm === 'update' ? 'md:grid-cols-2' : ''}`} onSubmit={submit}>
-      <FloatLabel> <InputText className="w-[276px]" id="first-name" ref={firstNameRef} defaultValue={user.firstName} /> <label>First Name</label> </FloatLabel>
-      <FloatLabel> <InputText className="w-[276px]" id="last-name" ref={lastNameRef} defaultValue={user.lastName} /> <label>Last Name</label> </FloatLabel>
-      <FloatLabel> <Calendar className="w-[276px]" inputId="birth_date" value={date} onChange={(e) => setDate(e.value)} /> <label>Birth Date</label> </FloatLabel>
-      <FloatLabel> <InputText className="w-[276px]" id="email" ref={emailRef} type='email' defaultValue={user.email} /> <label>Email</label> </FloatLabel>
-      <FloatLabel> <Password inputId="password" value={password} onChange={(e) => setPassword(e.target.value)} toggleMask ={typeForm === 'create'}/> <label>Password</label> </FloatLabel>
-      <FloatLabel> <Password inputId="confirm-password" value={confirmpassword} onChange={(e) => setConfirmPassword(e.target.value)} toggleMask ={typeForm === 'create'}/> <label>Confirm Password</label> </FloatLabel>
-      <Button className={`${typeForm === 'update' ? 'md:col-span-2' : ''}`} type='submit' label={typeForm === "create" ? "Create" : "Update"} />
+      <FloatLabel> 
+        <InputText className="w-[276px]" id="first-name" ref={firstNameRef} defaultValue={user.firstName} /> 
+        <label>First Name</label> 
+      </FloatLabel>
+      <FloatLabel> 
+        <InputText className="w-[276px]" id="last-name" ref={lastNameRef} defaultValue={user.lastName} /> 
+        <label>Last Name</label> 
+      </FloatLabel>
+      <FloatLabel> 
+        <Calendar className="w-[276px]" inputId="birth_date" value={date} onChange={(e) => setDate(e.value)} /> 
+        <label>Birth Date</label> 
+      </FloatLabel>
+      <FloatLabel>
+        <InputText className="w-[276px]" id="email" ref={emailRef} type='email' defaultValue={user.email} /> 
+        <label>Email</label> 
+      </FloatLabel>
+      <FloatLabel> 
+        <Password inputId="password" value={password} onChange={(e) => setPassword(e.target.value)} toggleMask ={typeForm === 'create'}/> 
+        <label>Password</label> 
+      </FloatLabel>
+      <FloatLabel> 
+        <Password inputId="confirm-password" value={confirmpassword} onChange={(e) => setConfirmPassword(e.target.value)} toggleMask ={typeForm === 'create'}/> 
+        <label>Confirm Password</label> 
+      </FloatLabel>
+      <Button className={`${typeForm === 'update' ? 'md:col-span-2' : ''} w-72`} type='submit' label={typeForm === "create" ? "Create" : "Update"} />
     </form>
   );
 };

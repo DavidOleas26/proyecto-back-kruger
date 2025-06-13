@@ -1,6 +1,6 @@
 import React from 'react'; 
 import { useEffect, useState } from 'react';
-import profile from '../../../../assets/Img/profile.jpg'
+import profile from '../../../../assets/Img/profile.png'
 import { useNavigate } from 'react-router-dom';
 // servicios
 import { ImagesService } from '../../../../services/apiImages/apiImages';

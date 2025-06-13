@@ -8,11 +8,11 @@ export const NewFlat = () => {
   const navigate = useNavigate();
   const localStorageService = new LocalStorageService();
 
-  useEffect(() =>{
-      if (!localStorageService.checkLoggedUser()){
-          navigate('/login');
-      }
-  })
+  // useEffect(() =>{
+  //     if (!localStorageService.checkLoggedUser()){
+  //         navigate('/login');
+  //     }
+  // })
   return (
     <>
       <div className="relative w-screen h-screen max-w-[1440px]">
