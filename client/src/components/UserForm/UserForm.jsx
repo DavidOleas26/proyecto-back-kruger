@@ -9,7 +9,6 @@ import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Password } from 'primereact/password';
 // importar los servicios de usario para crear usuario en firebase
-import { UserService } from "../../services/user/user";
 import { LocalStorageService } from "../../services/localStorage/localStorage";
 // Axios
 import axios from "axios";
@@ -22,7 +21,7 @@ export const UserForm = ({id}) => {
   const navigation = useNavigate();
   
   // Context
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   // Form Inputs
   const [password, setPassword] = useState('');
   const [confirmpassword, setConfirmPassword] = useState('');
@@ -31,106 +30,217 @@ export const UserForm = ({id}) => {
   const [date, setDate] = useState(null);
   const emailRef = useRef();
   
+  const [token, setToken] = useState(null)
   const [user, setUser] = useState(
     { 
       firstName: '', 
       lastName: '', 
       birthdate: '', 
       email: '', 
-      password: '' 
     }
   );
-  const userService = new UserService();
+
   const localStorageService = new LocalStorageService();
 
   useEffect(() => { 
     if (typeForm === 'update') {
-      getUser()
+      const userToken = localStorageService.getUserToken();
+      setToken(userToken)
+      getUser({userToken})
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { 
-    if (user.birthdate) {
-      setDate(convertFireBaseDate(user.birthdate))
-    }; 
-  }, [user.birthdate]);
-
-  const getUser = async () => {
-    const resultUser = await userService.getUser(id);
-    if (!resultUser.data) navigation('/');
-    setUser(resultUser.data);
-  };
-
-  const submit = async (event) => {
-    event.preventDefault();
-    
-    if (!validateForm()) return;
-
-    const firstName = firstNameRef.current?.value
-    const firstNameCapitalized = firstName.charAt(0).toUpperCase() + firstName.slice(1)
-
-    const lastName = lastNameRef.current?.value
-    const lastNameCapitalized = lastName.charAt(0).toUpperCase() + lastName.slice(1)
-
-    const newUser = {
-        firstName: firstNameCapitalized,
-        lastName: lastNameCapitalized,
-        birthdate: date,
-        email: emailRef.current?.value,
-        password: password
-    };
-    
-    let result;
-    if (typeForm === 'create') {
+  const getUser = async ({ userToken }) => {
       try {
-        const response = await axios.post('http://localhost:8080/auth/register', newUser)
-        const { token, user, message } = response.data
-        login({token, user})
-        Swal.fire({
-            icon: 'success',
-            title: 'Welcome!',
-            showConfirmButton: false,
-            text: message,
-            timer: 1500,
-        });
-        setTimeout(() => {
-            navigation('/');
-        }, 1500);
+          const response = await axios.get(`http://localhost:8080/users/${id}`,{
+              headers: {
+                  authorization: `Bearer ${userToken}`
+              }
+          })
+          setUser(response.data)
       } catch (error) {
-        const errorMessage = error.response.data.error
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: errorMessage,
-        });
-      }
+          const errorStatus = error.response.status    
+          const errorMessage = error.response.data.error
+          Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: errorMessage,
+              showConfirmButton: false,
+              timer: 1500,
+          });
 
-    } else if (typeForm === 'update'){
-      result = await userService.updateUser(newUser, id);
-      localStorageService.updateLoggedUser(result.data);
+          if ( errorStatus === 401 ) {
+              setTimeout(() => {
+                  logout()
+                  navigation('/login');
+              }, 1500);
+          } else {
+              setTimeout(() => {
+                  navigation('/');
+              }, 1500);
+          }
+      }
     }
 
-  };
+  const submit = async (event) => {
+  event.preventDefault();
+  if (!validateForm()) return;
+
+  const firstNameRaw = firstNameRef.current?.value.trim();
+  const lastNameRaw = lastNameRef.current?.value.trim();
+  const emailRaw = emailRef.current?.value.trim();
+
+  const firstNameCapitalized = firstNameRaw
+    ? firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1)
+    : '';
+  const lastNameCapitalized = lastNameRaw
+    ? lastNameRaw.charAt(0).toUpperCase() + lastNameRaw.slice(1)
+    : '';
+
+  // Generar objeto base
+  const userData = {};
+
+  if (firstNameRaw) userData.firstName = firstNameCapitalized;
+  if (lastNameRaw) userData.lastName = lastNameCapitalized;
+  if (date) userData.birthdate = date;
+  if (emailRaw) userData.email = emailRaw;
+  if (password) userData.password = password;
+
+  if (typeForm === 'create') {
+    try {
+      const response = await axios.post(
+        'http://localhost:8080/auth/register',
+        userData
+      );
+
+      const { token, user, message } = response.data;
+      login({ token, user });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Welcome!',
+        text: message,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+
+      setTimeout(() => {
+        navigation('/');
+      }, 1500);
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || 'Registration failed';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: errorMessage,
+      });
+    }
+  } else if (typeForm === 'update') {
+    try {
+      const updatedUser = {};
+
+      if (firstNameRaw && firstNameRaw !== user.firstName) {
+        updatedUser.firstName = firstNameCapitalized;
+      }
+      if (lastNameRaw && lastNameRaw !== user.lastName) {
+        updatedUser.lastName = lastNameCapitalized;
+      }
+      if (emailRaw && emailRaw !== user.email) {
+        updatedUser.email = emailRaw;
+      }
+      if (
+        date &&
+        new Date(date).toISOString().split('T')[0] !== user.birthdate.split('T')[0]
+      ) {
+        updatedUser.birthdate = date;
+      }
+      if (password.trim() !== '') {
+        updatedUser.password = password;
+      }
+      
+      await axios.patch(`http://localhost:8080/users/${id}`, updatedUser, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile updated!',
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      setTimeout(() => {
+        navigation('/profile');
+      }, 1500);
+
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || 'Update failed';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: errorMessage,
+      });
+    }
+  }
+};
 
   const validateForm = () => {
-    if (!firstNameRef.current.value.trim()) return showError("First name is required");
-    if (!lastNameRef.current.value.trim()) return showError("Last name is required");
-    if (!date) return showError("Birth date is required");
-    if (!isAdult(date)) return showError("You must be at least 18 years old");
-    if (!emailRef.current.value.includes('@')) return showError("Invalid email format");
-    if (typeForm === 'create' && password.length < 6) return showError("Password must be at least 6 characters");
-    if (typeForm === 'create' && password !== confirmpassword) return showError("Passwords do not match");
+    const isCreate = typeForm === 'create';
+
+    const firstName = firstNameRef.current.value.trim();
+    const lastName = lastNameRef.current.value.trim();
+    const email = emailRef.current.value.trim();
+
+    if (isCreate) {
+      if (!firstName) return showError("First name is required");
+      if (!lastName) return showError("Last name is required");
+      if (!date) return showError("Birth date is required");
+      if (!isAdult(date)) return showError("You must be at least 18 years old");
+      if (!email.includes('@')) return showError("Invalid email format");
+      if (password.length < 6) return showError("Password must be at least 6 characters");
+      if (password !== confirmpassword) return showError("Passwords do not match");
+    } else {
+      
+      if (firstName.trim() !== '' && firstName.length < 2)
+        return showError("First name must be at least 2 characters");
+
+      if (lastName.trim() !== '' && lastName.length < 2)
+        return showError("Last name must be at least 2 characters");
+
+      if (email.trim() !== '' && !email.includes('@'))
+        return showError("Invalid email format");
+
+      if (password !== '' && password.length < 6)
+        return showError("Password must be at least 6 characters");
+
+      if (password !== '' && password !== confirmpassword)
+        return showError("Passwords do not match");
+      
+      const birthdateChanged = date && new Date(date).toISOString().split('T')[0] !== user.birthdate.split('T')[0];
+      if (birthdateChanged && !isAdult(date))
+        return showError("You must be at least 18 years old");
+      
+
+    const hasChanged =
+      (firstName.trim() !== '' && firstName.trim() !== user.firstName) ||
+      (lastName.trim() !== '' && lastName.trim() !== user.lastName) ||
+      (email.trim() !== '' && email.trim() !== user.email) ||
+      (date && new Date(date).toISOString().split('T')[0] !== user.birthdate.split('T')[0]) ||
+      birthdateChanged ||
+      password.trim() !== '';
+          
+      if (!hasChanged) return showError("No changes detected");
+      
+    }
+
     return true;
   };
 
   const showError = (message) => {
     Swal.fire({ icon: 'error', title: 'Validation Error', text: message });
     return false;
-  };
-
-  const convertFireBaseDate = (timeStamp) => {
-    return timeStamp?.seconds ? new Date(timeStamp.seconds * 1000) : null;
   };
 
   const isAdult = (birthDate) => {
@@ -148,19 +258,19 @@ export const UserForm = ({id}) => {
   return (
     <form className={`mt-5 w-11/12 grid grid-cols-1 justify-items-center items-center gap-7 ${typeForm === 'update' ? 'md:grid-cols-2' : ''}`} onSubmit={submit}>
       <FloatLabel> 
-        <InputText className="w-[276px]" id="first-name" ref={firstNameRef} defaultValue={user.firstName} /> 
+        <InputText className="w-[276px]" id="first-name" ref={firstNameRef}  placeholder={user.firstName}/> 
         <label>First Name</label> 
       </FloatLabel>
       <FloatLabel> 
-        <InputText className="w-[276px]" id="last-name" ref={lastNameRef} defaultValue={user.lastName} /> 
+        <InputText className="w-[276px]" id="last-name" ref={lastNameRef} placeholder={user.lastName} /> 
         <label>Last Name</label> 
       </FloatLabel>
       <FloatLabel> 
-        <Calendar className="w-[276px]" inputId="birth_date" value={date} onChange={(e) => setDate(e.value)} /> 
+        <Calendar className="w-[276px]" inputId="birth_date"  value={date} onChange={(e) => setDate(e.value)} /> 
         <label>Birth Date</label> 
       </FloatLabel>
       <FloatLabel>
-        <InputText className="w-[276px]" id="email" ref={emailRef} type='email' defaultValue={user.email} /> 
+        <InputText className="w-[276px]" id="email" ref={emailRef} type='email' placeholder={user.email} /> 
         <label>Email</label> 
       </FloatLabel>
       <FloatLabel> 

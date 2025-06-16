@@ -4,12 +4,12 @@ export class LocalStorageService {
         
     }
 
-    addLoggedUser(user){
-        localStorage.setItem('userLogged', JSON.stringify(user));
+    getLoggedUser(){
+        return JSON.parse(localStorage.getItem('user'));
     }
 
-    getLoggedUser(){
-        return JSON.parse(localStorage.getItem('userLogged'));
+    getUserToken () {
+        return localStorage.getItem('token')
     }
 
     updateLoggedUser(user) {
