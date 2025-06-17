@@ -5,10 +5,15 @@ import { UserController } from "../controllers/user.controller.js";
 import authenticationMiddleware from "../middlewares/authentication.middleware.js";
 import { AuthorizationMiddleware } from "../middlewares/userAuthorization.middleware.js";
 import { UserMiddleware } from "../middlewares/user.middleware.js";
+import { upload } from "../middlewares/uploadCloudinary.middleware.js";
 
 const userRouter = express.Router();
 
 userRouter.use(authenticationMiddleware)
+
+userRouter.get('/:id/profile-image', UserController.getUserProfileImageById);
+
+userRouter.post("/upload-profile-image", upload.single('profileImage'), UserController.uploadProfileImage)
 
 userRouter.get("/", 
   AuthorizationMiddleware.authAdminMiddleware, 

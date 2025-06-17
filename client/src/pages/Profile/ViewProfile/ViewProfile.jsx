@@ -24,8 +24,9 @@ export const ViewProfile = () => {
 
         // Si no hay ID en la URL, usar el del usuario logueado
         if (!paramId) {
-            setUserId(userLogged.id);
+            setUserId(userLogged.userId);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

@@ -1,43 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Galleria } from 'primereact/galleria';
-import { PhotoService } from '../../../../services/photoService/photoService'
 
-export const FlatCarrusel = () => {
+// eslint-disable-next-line react/prop-types
+export const FlatCarrusel = ({ images = [] }) => {
+  if (!images.length) return null;
 
-    const [images, setImages] = useState(null);
-    const responsiveOptions = [
-        {
-            breakpoint: '991px',
-            numVisible: 4
-        },
-        {
-            breakpoint: '767px',
-            numVisible: 3
-        },
-        {
-            breakpoint: '575px',
-            numVisible: 1
-        }
-    ];
+  return (
+    <div className="grid gap-2">
+      {/* Imagen principal */}
+      <div className="col-span-full">
+        <img
+          src={images[0]}
+          alt="Imagen principal"
+          className="w-full h-auto sm:h-[300px] object-cover rounded-lg"
+        />
+      </div>
 
-    useEffect(() => {
-        PhotoService.getImages().then(data => setImages(data));
-    }, [])
-
-    const itemTemplate = (item) => {
-        return <img src={item.itemImageSrc} alt={item.alt} style={{ width: '100%' }} />
-    }
-
-    const thumbnailTemplate = (item) => {
-        return <img src={item.thumbnailImageSrc} alt={item.alt} />
-    }
-
-    return(
-        <>
-            <div>
-                <Galleria value={images} responsiveOptions={responsiveOptions} numVisible={5} style={{ maxWidth: '640px' }} 
-                    item={itemTemplate} thumbnail={thumbnailTemplate} />
-            </div>
-        </>
-    );
-}
+      {/* Resto de imágenes (max 3) en una fila con columnas */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {images.slice(1, 4).map((img, index) => (
+          <img 
+            key={index}
+            src={img}
+            alt={`Imagen ${index + 2}`}
+            className="w-full h-auto object-cover rounded-lg"
+          />
+        ))}
+      </div>
+    </div>
+  );
+};

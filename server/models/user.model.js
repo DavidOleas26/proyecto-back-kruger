@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema({
     min: [0, "The number of flats can not be less than zero"],
     default: 0
   },
+   profileImageUrl: {
+    type: String,
+    default: 'https://res.cloudinary.com/dmf95fj1h/image/upload/v1750035130/profile_nsu0qw.png'
+  },
   createdAt: {
     type: Date,
     default: Date.now,

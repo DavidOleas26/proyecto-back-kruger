@@ -8,6 +8,7 @@ export default {
     extend: {
       backgroundImage:{
         'register': "url('/src/assets/Img/register.jpg')",
+        'register-form': "url('/src/assets/Img/register-form.jpg')",
         'register-bg': "url('/src/assets/Img/register-bg.jpg')",
         'login': "url('/src/assets/Img/login.jpg')",
         'newflat': "url('/src/assets/Img/newFlat.jpg')",

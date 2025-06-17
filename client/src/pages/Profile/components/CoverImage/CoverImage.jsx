@@ -13,9 +13,9 @@ export const CoverImage = ()=> {
         setCoverImage(response);
     }
 
-    useEffect(()=>{
-        getCoverImage();
-    },[])
+    // useEffect(()=>{
+    //     getCoverImage();
+    // },[])
 
     return(
         <>

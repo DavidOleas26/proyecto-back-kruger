@@ -13,9 +13,27 @@ export class AuthController {
       if (error) {
         return res.status(400).json({ error: error.details[0].message });
       }
+<<<<<<< HEAD
 
       const user = await UserService.saveUser(req.body);
       res.status(201).json({ message: "User created successfully", user });
+=======
+  
+      const user = await UserService.saveUser(req.body)
+      const userToken = AuthService.getToken(user)
+      
+      res.status(201).json({
+        message: "User created successfully", 
+        user: {
+          userId: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }, 
+        token: userToken
+      })
+  
+>>>>>>> 8fc44b7be40c55c3a60d6a24db9f837b8a2d1a99
     } catch (error) {
       if (error.code === 11000 && error.keyPattern?.email) {
         return res
@@ -49,9 +67,24 @@ export class AuthController {
       if (!isMatch) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
+<<<<<<< HEAD
 
       const userToken = AuthService.getToken(user);
       res.json({ token: userToken });
+=======
+  
+      const userToken = AuthService.getToken(user)
+      res.json({ 
+        token: userToken,
+        user: {
+          userId: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        } 
+      })
+  
+>>>>>>> 8fc44b7be40c55c3a60d6a24db9f837b8a2d1a99
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

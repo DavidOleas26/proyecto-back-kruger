@@ -6,6 +6,7 @@ import authenticationMiddleware from '../middlewares/authentication.middleware.j
 import { AuthorizationMiddleware } from '../middlewares/flatsAuthorization.middleware.js'
 import { FlatsMiddleware } from '../middlewares/flats.middleware.js'
 import { AuthorizationMiddleware as commentMiddleware} from '../middlewares/commentsAuthorization.middleware.js'
+import { upload } from '../middlewares/uploadCloudinary.middleware.js'
 
 const flatRouter = express.Router()
 
@@ -17,13 +18,18 @@ flatRouter.get('/',
   FlatsMiddleware.buildQueryMiddleware, 
   FlatController.getAllFlats
 )
+
+// Rutas específicas primero
 flatRouter.get('/my-flats', FlatController.getAllMyFlats)
-flatRouter.get('/:id', FlatController.getFlatById)
 flatRouter.post('/', FlatController.addFlat)
+flatRouter.post('/:id/images', upload.array('departmentImages', 4), FlatController.uploadFlatImages)
+
+// Rutas dinámicas después
+flatRouter.get('/:id', FlatController.getFlatById)
 flatRouter.patch('/:id', AuthorizationMiddleware.flatOwnerMiddleware, FlatController.updateFlat)
 flatRouter.delete('/:id', AuthorizationMiddleware.flatOwnerMiddleware, FlatController.deleteFlat)
 
-// EndPoints Comments
+// Endpoints de comentarios
 flatRouter.post('/:flatId/comments', commentMiddleware.usersAllowedToComment, CommentController.createComment)
 flatRouter.get('/:flatId/comments', commentMiddleware.flatOwnerCommentsMiddleware, CommentController.getAllCommentsOwner)
 flatRouter.get('/:userId/user-comments', commentMiddleware.userOwnerMessages ,CommentController.getUserMessages)

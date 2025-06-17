@@ -4,12 +4,12 @@ export class LocalStorageService {
         
     }
 
-    addLoggedUser(user){
-        localStorage.setItem('userLogged', JSON.stringify(user));
+    getLoggedUser(){
+        return JSON.parse(localStorage.getItem('user'));
     }
 
-    getLoggedUser(){
-        return JSON.parse(localStorage.getItem('userLogged'));
+    getUserToken () {
+        return localStorage.getItem('token')
     }
 
     updateLoggedUser(user) {
@@ -19,7 +19,7 @@ export class LocalStorageService {
     }
 
     checkLoggedUser(){
-        const user = localStorage.getItem('userLogged');
+        const user = localStorage.getItem('user');
         return user ? true : false;
     }
 }
