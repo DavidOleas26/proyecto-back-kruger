@@ -11,7 +11,7 @@ export class CommentController {
       }
 
       const comment = await CommentService.saveComment(req.comment)
-      res.status(201).json(comment)
+      res.status(201).json({ message: "review created successfully", comment })
   
     } catch (error) {
       res.status(500).json({message: error.message})
