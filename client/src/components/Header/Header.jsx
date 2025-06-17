@@ -9,11 +9,14 @@ import { LocalStorageService } from '../../services/localStorage/localStorage';
 import { UserService } from '../../services/user/user';
 import Swal from 'sweetalert2';
 import "./Header.css"
+import { Dialog } from 'primereact/dialog';
 
 export const Header = () => {
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [admin, setAdmin] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+
 
     const localStorageService = new LocalStorageService();
     const userService = new UserService();
@@ -31,10 +34,10 @@ export const Header = () => {
         }
     }, []);
 
-    const checkIfAdmin = async (userId) => {
-        const result = await userService.checkAdminUser(userId);
-        setIsAdmin(result);
-    };
+    // const checkIfAdmin = async (userId) => {
+    //     const result = await userService.checkAdminUser(userId);
+    //     setIsAdmin(result);
+    // };
 
     const handleLogout = () => {
         Swal.fire({

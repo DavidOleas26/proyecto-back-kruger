@@ -7,11 +7,12 @@ export const Home = ()=> {
 
     const localStorageService = new LocalStorageService();
     const navigate = useNavigate();
-    useEffect(() =>{
-        if (!localStorageService.checkLoggedUser()){
-            navigate('/login');
-        }
-    })
+useEffect(() => {
+    if (!localStorageService.checkLoggedUser()) {
+        navigate('/login');
+    }
+}, []);
+
 
     return(
         <>
