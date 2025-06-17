@@ -40,8 +40,8 @@ export const ProfileCard = ({ id }) => {
             })
             setUser(response.data)
         } catch (error) {
-            const errorStatus = error.response.status    
-            const errorMessage = error.response.data.error
+            const errorStatus = error?.response?.status    
+            const errorMessage = error?.response?.data?.error ||  error.code ||'Something went wrong'
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -78,15 +78,22 @@ export const ProfileCard = ({ id }) => {
             const token = localStorageService.getUserToken();
 
             const response = await axios.get(`http://localhost:8080/users/${id}/profile-image`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
 
             const imageUrl = response.data.profileImageUrl || null;
             setProfileImage(imageUrl);
         } catch (error) {
             console.error("Error al obtener la imagen de perfil:", error.response?.data?.message || error.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || error.message,
+                showConfirmButton: false,
+                timer: 1500,
+            });
         }
     }
 
@@ -137,7 +144,7 @@ export const ProfileCard = ({ id }) => {
                 )}
                 <div className='flex flex-col items-center gap-3'>
                     <div id="img-perfil" className="">
-                        <img src={profileImage ? profileImage: profile} alt="Imangen de perfil" className="aspect-square w-28 h-28 rounded-full object-contain sm:w-48 sm:h-48"/>
+                        <img src={profileImage ? profileImage: profile} alt="Imangen de perfil" className="aspect-square w-28 h-28 rounded-full object-cover sm:w-48 sm:h-auto"/>
                     </div>
                     <span className='text-secondary_text hidden sm:block'>{ user.email }</span>
                 </div>

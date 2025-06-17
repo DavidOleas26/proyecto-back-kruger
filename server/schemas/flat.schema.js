@@ -75,6 +75,14 @@ const validateFlatSchema = Joi.object(
         'any.required': 'El precio de alquiler es obligatorio.'
       }),
 
+    description: Joi.string()
+      .max(1000)
+      .trim()
+      .messages({
+        'string.base': 'La descripción debe ser un texto.',
+        'string.max': 'La descripción no puede superar los 1000 caracteres.'
+    }),  
+
     dateAvailable: Joi.date()
       .required()
       .min('now')
@@ -139,6 +147,14 @@ const validateUpdateFlatSchema = Joi.object({
       "number.precision": "El precio de renta puede tener hasta 2 decimales.",
       "number.positive": "El precio de renta debe ser mayor que cero."
     }),
+
+  description: Joi.string()
+    .max(1000)
+    .trim()
+    .messages({
+      'string.base': 'La descripción debe ser un texto.',
+      'string.max': 'La descripción no puede superar los 1000 caracteres.'
+  }), 
 
   dateAvailable: Joi.date()
     .min('now')

@@ -43,6 +43,11 @@ const flatSchema = new mongoose.Schema({
     },
     required: [true, 'Year of construction is required'],
   },
+  description: {
+    type: String,
+    maxlength: [1000, 'La descripción no puede superar los 1000 caracteres'],
+    trim: true
+  },
   rentPrice: {
     type: Number,
     min: [0, "Rent price can not be  less than 0"],
@@ -61,6 +66,9 @@ const flatSchema = new mongoose.Schema({
     ref: "users",
     required: true
   },
+  images: [{ 
+    type: String
+  }],
   createdAt : {
     type: Date,
     default: Date.now,

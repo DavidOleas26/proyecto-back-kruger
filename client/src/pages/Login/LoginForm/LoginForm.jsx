@@ -10,11 +10,13 @@ import { Button } from 'primereact/button';
 import axios from "axios";
 // Libreria de alertas
 import Swal from 'sweetalert2'; // Importar SweetAlert
+import { ProgressSpinner } from "primereact/progressspinner";
 
 export const LoginForm = () => {
     // referencias a los inputs
     const emailRef = useRef();
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigation = useNavigate();
 
     const { login } = useAuth()
@@ -62,6 +64,7 @@ export const LoginForm = () => {
             password: pass,
         }
 
+        setLoading(true);
         try {
             const response = await axios.post('http://localhost:8080/auth/login', userLogged)
             const { token, user } = response.data
@@ -78,18 +81,27 @@ export const LoginForm = () => {
             }, 1500);
 
         } catch (error) {
-            const errorMessage = error.response.data.error
+            console.log(error);
+            const errorMessage = error?.response?.data?.error ||  error.code ||'Something went wrong'
+            console.log(errorMessage);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: errorMessage,
             });
+        }finally {
+            setLoading(false); 
         }
     }
 
     return(
         <>
-            <form onSubmit={(event) => submit(event)} className="mt-4 w-11/12 flex flex-col gap-8 items-center">
+            <form onSubmit={(event) => submit(event)} className="relative mt-4 w-11/12 flex flex-col gap-8 items-center">
+                {loading && (
+                <div className="absolute z-50 flex justify-center items-center mt-4">
+                    <ProgressSpinner />
+                </div>
+                )}
                 {/* input email */}
                 <FloatLabel className="flex flex-col justify-center items-center">
                     <InputText id="email" keyfilter="email" className="w-[276px]" ref={emailRef} type={'email'} />

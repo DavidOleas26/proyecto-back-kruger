@@ -60,8 +60,8 @@ export const UserForm = ({id}) => {
           })
           setUser(response.data)
       } catch (error) {
-          const errorStatus = error.response.status    
-          const errorMessage = error.response.data.error
+          const errorStatus = error?.response?.status    
+          const errorMessage = error?.response?.data?.error || error?.code || 'Somethig went worng!'
           Swal.fire({
               icon: 'error',
               title: 'Error',
@@ -129,7 +129,7 @@ export const UserForm = ({id}) => {
         navigation('/');
       }, 1500);
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Registration failed';
+      const errorMessage = error?.response?.data?.error || 'Registration failed';
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -176,7 +176,7 @@ export const UserForm = ({id}) => {
       }, 1500);
 
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Update failed';
+      const errorMessage = error?.response?.data?.error || 'Update failed';
       Swal.fire({
         icon: 'error',
         title: 'Error',

@@ -37,6 +37,13 @@ export const UpdateProfile = () => {
             setProfileImage(imageUrl);
         } catch (error) {
             console.error("Error al obtener la imagen de perfil:", error.response?.data?.message || error.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || error.message,
+                showConfirmButton: false,
+                timer: 1500,
+            });
         }
 
     };

@@ -19,7 +19,7 @@ export class LocalStorageService {
     }
 
     checkLoggedUser(){
-        const user = localStorage.getItem('userLogged');
+        const user = localStorage.getItem('user');
         return user ? true : false;
     }
 }

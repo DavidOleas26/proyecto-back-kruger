@@ -1,132 +1,154 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Servicios
-import { FlatService } from "../../../../services/flat/flat";
 import { LocalStorageService } from "../../../../services/localStorage/localStorage";
 import { Fan } from "../../../../assets/svg/fan";
+import { Building2, MapPin, Ruler, Calendar, Snowflake, Wallet } from "lucide-react";
 // 
 import { Divider } from 'primereact/divider';
+import axios from "axios";
+import Swal from "sweetalert2";
         
 
-export const FlatInfo = ({flatId}) => {
-    
-    const [edit, setEdit] = useState(false);
-    const [ac, setAc] = useState(false)
+// eslint-disable-next-line react/prop-types
+export const FlatInfo = ({ flatId }) => {
+  const [edit, setEdit] = useState(false);
+  const [flat, setFlat] = useState({});
+  const navigation = useNavigate();
 
-    const navigation = useNavigate();
+  const localStorageService = new LocalStorageService();
+  const userlogged = localStorageService.getLoggedUser();
 
-    // flat auxiliar
-    const [flat, setflat] = useState({
-    city: '',
-    streetName: '',
-    streetNumber: '',
-    area: '',
-    ac: '',
-    yearBuilt: '',
-    rentPrice: '',
-    dateAvailable: '',
-    createdBy: '',
+  const checkFlatOwner = async () => {
+    try {
+      const token = localStorageService.getUserToken();
+      const response = await axios.get(`http://localhost:8080/flats/${flatId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    });
-
-    // servicios
-    const flatService = new FlatService();
-    const localStorageService = new LocalStorageService();
-
-    // Obtener el usuario loggeado
-    const userlogged =localStorageService.getLoggedUser();
-
-  const checkFlatOwner = async ()=> {
-      const response = await flatService.getFlatbyId(flatId);
-      if ( response.data.createdBy !== userlogged.id) {
-        // navigation('/');
-        setEdit(false);
-        setflat(response.data);
-      }else {
-        setEdit(true);  
-        setflat(response.data);
-        // console.log(flat);
-      }
+      const flat = response.data;
+      setFlat(flat);
+      setEdit(flat?.ownerId?._id === userlogged.userId);
+    } catch (error) {
+      const errorMessage = error?.response?.data?.error || error.code || 'Something went wrong';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: errorMessage,
+        showConfirmButton: false,
+        timer: 1500,
+      });
     }
-
-    useEffect(()=> {
-        checkFlatOwner();
-    },[])
-
-    // Formatear el año de creacion
-    const formatYearBuilt = (date) => {
-      if (!date) return 'Fecha no disponible';
-
-      if ( typeof(date) === 'object'  ) {
-          const newdate = new Date(date.seconds*1000);
-          return new Intl.DateTimeFormat('es-ES', {
-              year: 'numeric',
-          }).format(newdate);
-      }
   };
 
-  const formatDateAvaialble = (date) => {
-    if (!date) return 'Fecha no disponible';
-
-    if ( typeof(date) === 'object'  ) {
-        const newdate = new Date(date.seconds*1000);
-        return new Intl.DateTimeFormat('es-ES', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-        }).format(newdate);
-    }
-};
-
-const handleNavigate = () => {
-  navigation(`/edit-flat/${flatId}`);
-};
-
   useEffect(() => {
-    if (flat.ac) {
-      setAc(true);
-    }
-  },);
+    checkFlatOwner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    return(
-        <>
-          <div className="relative h-full  px-2 flex flex-col">
-              {edit && (
-                <div className="absolute z-10 top-2 right-3" onClick={handleNavigate}>
-                  <span className="sm:hidden"><i className="pi pi-pen-to-square text-lg"></i></span>
-                  <span className="hidden sm:inline-block font-Lora text-white border rounded bg-[#114B5F] px-3 transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110 duration-300">Edit</span>
-                </div>
-              )}
-              <div>
-                <h3 className="text-primary_text text-lg font-bold font-Montserrat sm:mt-8 md:text-2xl">{ `${flat.city} - Apartment ` }</h3>
-                <span className="text-secondary_text text-sm font-Lora"> { `${flat.streetName} - ${flat.streetNumber}` } </span>
-              </div>
-              <Divider className="my-3"/>
-              <span className=" text-text-primary-color/80 text-lg font-Lora font-bold"> { `$ ${flat.rentPrice}` } </span>
-              <Divider className="my-3"/>
-              <div className="flex flex-row justify-around">
-                <div className="flex flex-col justify-center items-center">
-                   <span className="text-secondary_text text-sm font-Lora">Year Built</span> 
-                   <span className="text-secondary_text text-base font-Lora">{formatYearBuilt(flat.yearBuilt)}</span> 
-                </div>
-                <div className="flex flex-col justify-center items-center">
-                   <span className="text-secondary_text text-sm font-Lora">Area Size</span> 
-                   <span className="text-secondary_text text-base font-Lora">{ `${ flat.area } m2`  }</span> 
-                </div>
-                {ac && (
-                  <div className="flex flex-col justify-center items-center">
-                    <span className="text-secondary_text text-sm font-Lora">AC</span> 
-                    <Fan/> 
-                  </div>
-                )}
-              </div>
-              <Divider className="my-3"/>
-              <div>
-                <span className="text-pretty text-primary_text text-sm font-Opensans">Description:</span>
-                <p className="mt-1 text-pretty text-primary_text/60 text-sm font-Opensans">Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam dignissimos dolore eaque, ad id nihil explicabo est iusto assumenda magnam eius recusandae voluptas saepe ullam doloremque ab adipisci eos laborum.</p>
-              </div>
-              <span className="my-8 font-Opensans text-primary_text"> Date Available: { formatDateAvaialble(flat.dateAvailable) } </span>          
+  const formatYearBuilt = (yearString) => {
+    const date = new Date(yearString);
+    return isNaN(date) ? 'N/A' : date.getFullYear();
+  };
+
+  const formatDateAvailable = (dateString) => {
+    const date = new Date(dateString);
+    return isNaN(date)
+      ? 'N/A'
+      : date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const handleNavigate = () => {
+    navigation(`/edit-flat/${flatId}`);
+  };
+
+  return (
+    <div className="flex flex-col gap-4 relative p-5 bg-white shadow-2xl rounded-2xl max-w-3xl mx-auto border border-gray-100">
+      {edit && (
+        <button
+          onClick={handleNavigate}
+          className="absolute top-4 right-4 bg-teal-700 hover:bg-teal-800 text-white text-sm px-4 py-2 rounded-lg shadow-md transition"
+        >
+          Edit
+        </button>
+      )}
+
+      {/* Título y ubicación */}
+      <div className="mb-4">
+        <h3 className="text-2xl font-bold text-primary_text font-Montserrat flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-teal-700" />
+          {`${flat.city || 'City'} - Apartment`}
+        </h3>
+        <p className="text-secondary_text text-sm font-Lora flex items-center gap-1 mt-1">
+          <MapPin className="w-4 h-4 text-gray-400" />
+          {`${flat.streetName || ''} ${flat.streetNumber || ''}`}
+        </p>
+      </div>
+
+      <Divider className="my-3" />
+
+      {/* Precio */}
+      <div className="flex flex-col items-start gap-1">
+        <div className="flex items-center gap-2">
+          <Wallet className="w-5 h-5 text-teal-700" />
+          <span className="text-xl text-teal-700 font-bold font-Lora">
+            ${flat.rentPrice || 'N/A'}
+          </span>
+        </div>
+        <span className="text-sm text-gray-500 font-Opensans">
+          Monthly rent price for this apartment.
+        </span>
+      </div>
+
+      <Divider className="my-3" />
+
+      {/* Características */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+        <div>
+          <p className="text-sm text-secondary_text font-Lora flex justify-center items-center gap-1">
+            <Calendar className="w-4 h-4 text-gray-400" />
+            Year Built
+          </p>
+          <p className="text-base text-primary_text">{formatYearBuilt(flat.yearBuilt)}</p>
+        </div>
+        <div>
+          <p className="text-sm text-secondary_text font-Lora flex justify-center items-center gap-1">
+            <Ruler className="w-4 h-4 text-gray-400" />
+            Area Size
+          </p>
+          <p className="text-base text-primary_text">{flat.areaSize} m²</p>
+        </div>
+        {flat.hasAc && (
+          <div>
+            <p className="text-sm text-secondary_text font-Lora flex justify-center items-center gap-1">
+              <Snowflake className="w-4 h-4 text-blue-400" />
+              Air Conditioning
+            </p>
+            <div className="flex justify-center mt-1">
+              <Fan /> {/* Si estás usando tu ícono personalizado de Fan, lo dejas aquí */}
+            </div>
           </div>
-        </>
-    );
-}
+        )}
+      </div>
+
+      <Divider className="my-3" />
+
+      {/* Descripción */}
+      <div>
+        <p className="text-sm text-primary_text font-semibold font-Opensans mb-1">
+          Description:
+        </p>
+        <p className="text-sm text-primary_text/70 font-Opensans whitespace-pre-wrap">
+          {flat.description || 'No description provided for this apartment.'}
+        </p>
+      </div>
+
+      {/* Fecha disponible */}
+      <p className="mt-6 text-sm text-primary_text font-Opensans flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-gray-400" />
+        <span className="font-semibold">Date Available:</span>{' '}
+        {formatDateAvailable(flat.dateAvailable)}
+      </p>
+    </div>
+  );
+};
