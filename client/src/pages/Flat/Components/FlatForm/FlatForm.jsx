@@ -160,6 +160,7 @@ export const FlatForm = ({flatId}) => {
         }, 1500);
 
       } catch (error) {
+        console.log(error);
           const errorStatus = error.response.status    
           const errorMessage = error.response.data.error || 'Registration failed';
           Swal.fire({

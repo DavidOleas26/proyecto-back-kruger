@@ -281,7 +281,7 @@ export const UserForm = ({id}) => {
         <Password inputId="confirm-password" value={confirmpassword} onChange={(e) => setConfirmPassword(e.target.value)} toggleMask ={typeForm === 'create'}/> 
         <label>Confirm Password</label> 
       </FloatLabel>
-      <Button className={`${typeForm === 'update' ? 'md:col-span-2' : ''} w-72`} type='submit' label={typeForm === "create" ? "Create" : "Update"} />
+      <Button className={`${typeForm === 'update' ? 'md:col-span-2' : ''} w-72 bg-secondary_color hover:bg-[#1b7998]`} type='submit' label={typeForm === "create" ? "Create" : "Update"} />
     </form>
   );
 };

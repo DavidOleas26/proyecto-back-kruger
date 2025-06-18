@@ -9,7 +9,7 @@ export class AuthorizationMiddleware {
     try {
       const { flatId } = req.params
       const senderId = req.user?.userId
-      const { content, parentId } = req.body
+      const { content, parentId, rating } = req.body
 
       if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(flatId)) {
         return res.status(400).json({ error: "Invalid user or flat ID" });
@@ -28,7 +28,8 @@ export class AuthorizationMiddleware {
         req.comment = {
           flatId,
           senderId, 
-          content: content.trim(), 
+          content: content.trim(),
+          rating, 
           parentId: null, 
         }
         return next()

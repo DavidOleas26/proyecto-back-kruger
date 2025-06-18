@@ -5,6 +5,12 @@ const validateCommentSchema = Joi.object(
     flatId: Joi.string().required().messages({
       "any.required": "flatId is required",
     }),
+    rating: Joi.number().required().min(1).max(5).messages({
+    'number.base': 'La calificación debe ser un número.',
+    'number.min': 'La calificación mínima es 1.',
+    'number.max': 'La calificación máxima es 5.',
+    'any.required': 'La calificación es obligatoria.'
+    }),
     senderId: Joi.string().required().messages({
       "any.required": "SenderId is required",
     }), 

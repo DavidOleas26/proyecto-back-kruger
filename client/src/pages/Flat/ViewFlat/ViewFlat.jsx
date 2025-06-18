@@ -82,7 +82,7 @@ export const ViewFlat = () => {
           <FlatInfo flatId={ flatId } />
         </section>
       </div>
-      <div className='mt-4 w-11/12'>
+      <div className='my-4 w-11/12'>
         <h3 className='font-Montserrat font-bold text-primary_text text-xl mb-4'>Reviews</h3>
         <Reviews/>
       </div>

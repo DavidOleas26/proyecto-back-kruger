@@ -112,7 +112,7 @@ export const LoginForm = () => {
                     <Password inputId="password" value={password} onChange={(e) => setPassword(e.target.value)}  toggleMask/>
                     <label htmlFor="password" className="font-bold mb-2">Password</label>
                 </FloatLabel>
-                <Button type={'submit'} label="Log In" />
+                <Button type={'submit'} label="Log In" className="bg-secondary_color hover:bg-[#08222b]"/>
             </form>
         </>
     );

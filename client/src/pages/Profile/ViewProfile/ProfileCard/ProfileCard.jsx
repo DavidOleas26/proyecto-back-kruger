@@ -161,7 +161,7 @@ export const ProfileCard = ({ id }) => {
                     </div>
                     <span className='font-Lora text-secondary_text text-base sm:hidden'>{user.email}</span>
                     {edit && (
-                        <Button label="Edit" className='hidden sm:block mt-3 px-12' onClick={handleNavigate}/>
+                        <Button label="Edit" className='hidden sm:block mt-3 px-12 bg-secondary_color hover:bg-[#1b7998]' onClick={handleNavigate}/>
                     )}
                 </div>
             </div>

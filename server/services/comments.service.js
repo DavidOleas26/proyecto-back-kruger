@@ -2,9 +2,13 @@ import { Comment } from "../models/comments.model.js";
 
 export class CommentService{
   static saveComment = async (commentToSave) => {
-    const comment = new Comment(commentToSave)
-    await comment.save()
-    return comment.toObject()
+    const comment = await new Comment(commentToSave).save();
+
+    const populatedComment = await Comment.findById(comment._id)
+      .populate('senderId', 'firstName lastName profileImageUrl')
+      .lean();
+
+    return populatedComment;
   }
   
   static getCommentById = async (commentId) => {
@@ -18,17 +22,19 @@ export class CommentService{
   static getAllComments = async (flatId) => {
       // const comments = await Comment.find({ flatId, parentId: null })
       const comments = await Comment.find({ flatId })
-        .populate({
-          path: 'flatId',
-          select: 'ownerId',
-          populate: {
-            path: 'ownerId',
-            select: 'firstName lastName email'
-          }
-        })
-        .populate( 'senderId', 'firstName lastName email' )
+        .sort({ createdAt: -1 }) // Ordena del más reciente al más antiguo
+        .populate('senderId', 'firstName lastName profileImageUrl')
         .lean();
   
+        // .populate({
+        //   path: 'flatId',
+        //   select: 'ownerId',
+        //   populate: {
+        //     path: 'ownerId',
+        //     select: 'firstName lastName email'
+        //   }
+        // })
+
       // for (let comment of comments) {
       //   comment.replies = await Comment.find({ parentId: comment._id })
       //   .populate('senderId', 'email')
