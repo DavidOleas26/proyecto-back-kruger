@@ -48,9 +48,9 @@ export const ReviewsList = ({ newReviewSearch }) => {
 
   return(
     <>
-      <div className="w-11/12 mx-auto mt-4 space-y-4">
+      <div className="w-11/12 mx-auto mt-4 ">
         <h3 className="text-lg font-semibold text-gray-800">User Reviews</h3>
-        <div className="relative flex flex-col gap-4">
+        <div className="relative flex flex-col gap-4 my-4">
           {loadingListReview && (
           <div className="absolute z-50 self-center flex justify-center items-center mt-4">
               <ProgressSpinner />

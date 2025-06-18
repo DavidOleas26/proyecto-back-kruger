@@ -75,9 +75,9 @@ export class AuthorizationMiddleware {
             return res.status(404).send({ message: "Flat not found" })
           }
           
-          if (flat.ownerId._id.toString() !== userId.toString()) {
-            return res.status(403).json({ message: "Access denied for User" })
-          }
+          // if (flat.ownerId._id.toString() !== userId.toString()) {
+          //   return res.status(403).json({ message: "Access denied for User" })
+          // }
 
           next()
       } catch (error) {

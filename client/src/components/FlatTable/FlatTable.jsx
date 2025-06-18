@@ -107,10 +107,12 @@ export const FlatTable = ({ userLoggedId }) => {
     } else if (typeTable === "favorites") {
       getFavoriteFlats();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
 
 
+  // eslint-disable-next-line no-unused-vars
   const toggleFavoriteFlat = async (rowData, isFavorite, setIsFavorite) => {
     const favoriteFlat = {
       createdBy: rowData.createdBy,
@@ -119,9 +121,11 @@ export const FlatTable = ({ userLoggedId }) => {
     };
 
     if (!isFavorite) {
+      // eslint-disable-next-line no-unused-vars
       const result = await flatService.addFavoriteFlat(favoriteFlat);
       setIsFavorite(true);
     } else {
+      // eslint-disable-next-line no-unused-vars
       const result = await flatService.removeFavoriteFlat(favoriteFlat);
       setIsFavorite(false);
       // Si estamos en la vista "favorites", eliminamos el piso del estado
@@ -131,6 +135,7 @@ export const FlatTable = ({ userLoggedId }) => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const checkFavorite = async (favoritetFlat, setIsFavorite) => {
     const result = await flatService.checkFavoriteFlat(favoritetFlat);
     if (result.data !== null) {

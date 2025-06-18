@@ -1,129 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { Menubar } from 'primereact/menubar';
-import { Button } from 'primereact/button';
-import 'primereact/resources/themes/lara-light-indigo/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import logo from '../../assets/Img/logo.svg';
-import { LocalStorageService } from '../../services/localStorage/localStorage';
-import { UserService } from '../../services/user/user';
-import Swal from 'sweetalert2';
-import "./Header.css"
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
+import { LocalStorageService } from "../../services/localStorage/localStorage";
+import logo from "../../assets/Img/logo.svg";
+
+import { CircleUser, HousePlus, LogOut, Users } from "lucide-react";
 
 export const Header = () => {
-    const [user, setUser] = useState(null);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [admin, setAdmin] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const localStorageService = new LocalStorageService();
-    const userService = new UserService();
-    const loggedUser = localStorageService.getLoggedUser();
+  const [admin, setAdmin] = useState(false)
 
-    useEffect(() => {
-        const checkAdmin = async () => {
-            const result = await userService.checkAdminUser(loggedUser.id);
-            setAdmin(result);
-        };
+  const localStorageService = new LocalStorageService();
+  const userlogged = localStorageService.getLoggedUser();
 
-        if (loggedUser) {
-            setUser(loggedUser);
-            checkAdmin();
+  const handleLogOut = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const isActive = (path) => location.pathname.startsWith(path);
+
+    useEffect(() =>{
+        if ( userlogged?.role === 'admin' ) {
+            setAdmin(true)
         }
-    }, []);
+    },[userlogged])
 
-    const checkIfAdmin = async (userId) => {
-        const result = await userService.checkAdminUser(userId);
-        setIsAdmin(result);
-    };
+  return (
+    <div className="flex flex-col-reverse items-center justify-center w-full h-fit sm:w-fit sm:h-full text-gray-800 bg-gray-100 sm:flex-row">
+      <div className="flex items-center justify-around w-full h-16 flex-shrink-0 overflow-hidden text-gray-600 bg-gray-100 shadow-lg sm:flex-col sm:pt-4 sm:w-16 sm:h-full">
+        
+        {/* Logo */}
+        <Link
+          to="/"
+          className="items-center justify-center w-10 h-10 bg-purple-100 rounded-full sm:flex hover:bg-purple-200"
+        >
+          <img src={logo} alt="logo" />
+        </Link>
 
-    const handleLogout = () => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: 'You will be logged out.',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Logout',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                localStorage.removeItem("userLogged");
-                window.location.href = "/login";
-            }
-        });
-    };
+        {/* New Flat */}
+        <Link
+          to="/new-flat"
+          className="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none sm:mt-12 hover:text-orange-400 hover:bg-purple-100"
+        >
+          <HousePlus />
+          {isActive("/new-flat") && (
+            <div className="absolute top-0 w-2 h-3 sm:mt-0 -mt-3 bg-[#F47B3E] rounded sm:w-2 sm:h-full sm:left-0 sm:-ml-1"></div>
+          )}
+        </Link>
 
-    const handleDeleteAccount = async () => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: 'This action cannot be undone.',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Delete Account',
-            confirmButtonColor: '#d33',
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                if (user?.id) {
-                    const response = await userService.deleteUser(user.id);
-                    if (response.success) {
-                        localStorage.removeItem("userLogged");
-                        Swal.fire('Deleted!', 'Your account has been deleted.', 'success').then(() => {
-                            window.location.href = "/login";
-                        });
-                    } else {
-                        Swal.fire("Error', 'Error deleting account", 'error');
-                    }
-                }
-            }
-        });
-    };
+        {/* Profile */}
+        <Link
+          to="/profile"
+          className="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none hover:text-orange-400 hover:bg-purple-100"
+        >
+          <CircleUser />
+          {isActive("/profile") && (
+            <div className="absolute top-0 w-2 h-3 sm:mt-0 -mt-3 bg-[#F47B3E] rounded sm:w-2 sm:h-full sm:left-0 sm:-ml-1"></div>
+          )}
+        </Link>
 
-    const items = [
-        { label: "Home", icon: "pi pi-home", command: () => (window.location.href = "/") },
-        { label: "Profile", icon: "pi pi-user", command: () => (window.location.href = "/profile") },
-        { label: "My Flats", icon: "pi pi-building", command: () => (window.location.href = "/myflats") },
-        { label: "Favourites", icon: "pi pi-heart", command: () => (window.location.href = "/favorites") },
-    ];
-
-    // Agregar "All Users" solo si el usuario es admin
-    if (admin) {
-        items.push({ label: "All Users", icon: "pi pi-users", command: () => (window.location.href = "/allusers") });
-    }
-
-    const end = (
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {user && (
-                <span style={{ fontSize: "1rem", fontWeight: "bold" }}>
-                    Hello, {user.firstName} {user.lastName}
-                </span>
-            )}
-            <Button
-                label="Delete Account"
-                icon="pi pi-trash"
-                className="p-button-danger p-button-outlined"
-                onClick={() => setDeleteDialog(true)}
-            />
-            <Button label="Logout" icon="pi pi-sign-out" className="p-button-outlined" onClick={handleLogout} />
-        </div>
-    );
-
-    return (
-        <div>
-            <Menubar model={items} end={end} start={<img src={logo} alt="Logo" className="logo" style={{ height: "40px" }} />} />
-
-            <Dialog
-                visible={deleteDialog}
-                onHide={() => setDeleteDialog(false)}
-                header="Confirm Deletion"
-                footer={
-                    <>
-                        <Button label="Cancel" icon="pi pi-times" onClick={() => setDeleteDialog(false)} className="p-button-text" />
-                        <Button label="Delete" icon="pi pi-trash" onClick={handleDeleteAccount} className="p-button-danger" />
-                    </>
-                }
+        {/* allUsers */}
+        {admin && (
+            <Link
+                to="/allusers"
+                className="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none hover:text-orange-400 hover:bg-purple-100"
             >
-                <p>Are you sure you want to delete your account? This action cannot be undone.</p>
-            </Dialog>
-        </div>
-    );
+                <Users />
+                {isActive("/allusers") && (
+                <div className="absolute top-0 w-2 h-3 sm:mt-0 -mt-3 bg-[#F47B3E] rounded sm:w-2 sm:h-full sm:left-0 sm:-ml-1"></div>
+                )}
+            </Link>
+        )}
+
+        {/* Logout */}
+        <button
+          onClick={handleLogOut}
+          className="relative flex items-center justify-center w-12 h-12 rounded sm:mt-auto sm:w-full sm:rounded-none hover:text-orange-400 hover:bg-purple-100"
+        >
+          <LogOut />
+        </button>
+      </div>
+    </div>
+  );
 };
