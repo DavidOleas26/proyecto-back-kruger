@@ -156,7 +156,7 @@ export const FlatForm = ({flatId}) => {
         });
 
         setTimeout(() => {
-          navigation(`/view-flat/${flatId}`);
+          navigation(`/`);
         }, 1500);
 
       } catch (error) {
