@@ -9,7 +9,7 @@ export class FlatService {
   static getAllFlats = async ({query, pagination, sort}) => {
     const flats = await Flat.find(query)
       .collation({ locale: 'es', strength: 1 }) // orden insensible a mayuculas y minusculas
-      .populate("ownerId", "firstName lastName email deletedAt")
+      .populate("ownerId", "firstName lastName email profileImageUrl deletedAt")
       .sort(sort)
       .skip(pagination.skip)
       .limit(pagination.limit)

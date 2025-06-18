@@ -7,10 +7,10 @@ export const NewFlat = () => {
 
   const navigate = useNavigate();
   const localStorageService = new LocalStorageService();
+  const userToken = localStorageService.getUserToken();
 
   useEffect(() =>{
       const userLogged = localStorageService.getLoggedUser();
-      const userToken = localStorageService.getUserToken();
 
       if (!userToken) {
           navigate("/login");

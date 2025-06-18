@@ -16,8 +16,8 @@ export const Home = ()=> {
     return(
         <>
             <div className="bg-bg_color_primary relative w-full h-full max-w-[1440px] m-auto flex flex-col  items-center">
-                <h1>Home</h1>
-                <div className="w-11/12">
+
+                <div className="my-4 w-11/12">
                     <FlatTable/>
                 </div>
             </div>
