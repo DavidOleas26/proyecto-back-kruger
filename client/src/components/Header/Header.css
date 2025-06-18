@@ -1,37 +1,159 @@
-.header-container {
-    width: 100%;
-    margin: 0;
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css");
+
+/* Botón hamburguesa oculto por defecto */
+.hamburger {
+  display: none;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: #FF4F0F;
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  z-index: 1100;
 }
 
-.menubar {
-    z-index: 10;
+/* Menú vertical */
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 5em;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  background: #fff4f5;
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
+}
+.menu li a {
+  display: block;
+  height: 5em;
+  width: 5em;
+  text-indent: -500em;
+  line-height: 5em;
+  text-align: center;
+  color: #FF4F0F;
+  background: #fff4f5;
+  position: relative;
+  border-bottom: 1px solid #ffe2e3;
+  transition: background 0.3s ease-in-out;
+}
+.menu li a:before {
+  font-family: FontAwesome;
+  speak: none;
+  text-indent: 0em;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 1.4em;
+  line-height: 5em;
+}
+.menu li a.search:before {
+  content: "\f002";
+}
+.menu li a.archive:before {
+  content: "\f187";
+}
+.menu li a.pencil:before {
+  content: "\f040";
+}
+.menu li a.contact:before {
+  content: "\f003";
+}
+.menu li a.about:before {
+  content: "\f007";
+}
+.menu li a.home:before {
+  content: "\f015";
+}
+.menu li a:hover {
+  background: #FF4F0F;
+  color: #fff;
+}
+.menu li a.active {
+  background: #FF4F0F;
+  color: #fff;
+}
+.menu li a.active:after {
+  position: absolute;
+  left: 5em;
+  top: 0;
+  content: "";
+  border: 2.5em solid transparent;
+  border-left-color: #FF4F0F;
+  border-width: 2.5em 1em;
+}
+.menu li {
+  position: relative;
+}
+.menu li:after {
+  content: attr(title);
+  position: absolute;
+  left: 5em;
+  top: 0;
+  height: 5em;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  background: #FF4F0F;
+	color: #fff;
+  padding: 2em;
+  transition: all 0.3s ease-in-out;
+  visibility: hidden;
+  opacity: 0;
+}
+.menu li:hover:after {
+  visibility: visible;
+  opacity: 1;
 }
 
-.header-actions {
+@media screen and (max-height: 34em) {
+  .menu li {
+    font-size: 70%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .menu {
+    transform: translateX(-100%);
+    width: 10em; /* un poco más de ancho para que no se vea apretado */
+    padding-top: 4em; /* para que no choque con el botón hamburguesa */
+  }
+
+
+  .menu.open {
+    transform: translateX(0);
+  }
+
+	.menu li a {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.5em; /* separación entre ícono y texto */
+    text-indent: 0 !important;
+    height: auto;
+    width: 100%;
+    padding: 1em;
+    font-size: 1em;
+    text-align: left;
+    justify-content: flex-start;
+	
 }
 
-.header-actions .user-info {
-    font-size: 1rem;
-    font-weight: bold;
-    margin-right: 10px;
+  .menu li a:before {
+    position: static;
+    margin-right: 0.75em; /* más espacio entre ícono y texto */
+    font-size: 1.2em;
+    line-height: 1;
+  }
+
+  .menu li:after {
+    display: none; /* oculta el tooltip flotante */
+  }
 }
-
-@media (max-width: 768px) {
-    .header-actions {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 5px;
-    }
-
-    .header-actions .user-info {
-        display: none; /* Ocultar nombre de usuario en pantallas pequeñas */
-    }
-
-    .header-actions button {
-        font-size: 0.9rem;
-    }
-}
-

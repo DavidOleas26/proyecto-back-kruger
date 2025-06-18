@@ -1,132 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { Menubar } from 'primereact/menubar';
-import { Button } from 'primereact/button';
-import 'primereact/resources/themes/lara-light-indigo/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import logo from '../../assets/Img/logo.svg';
-import { LocalStorageService } from '../../services/localStorage/localStorage';
-import { UserService } from '../../services/user/user';
-import Swal from 'sweetalert2';
-import "./Header.css"
-import { Dialog } from 'primereact/dialog';
-
-export const Header = () => {
-    const [user, setUser] = useState(null);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [admin, setAdmin] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState(false);
+// src/components/Header.jsx
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import "./Header.css"; // crea este archivo con tu CSS
+import { useAuth } from "../../context/AuthContext";
 
 
-    const localStorageService = new LocalStorageService();
-    const userService = new UserService();
-    const loggedUser = localStorageService.getLoggedUser();
+const Header = () => {
+  const location = useLocation();
+  const hideHeader = ["/login", "/register"].includes(location.pathname);
+	const [menuOpen, setMenuOpen] = useState(false);
 
-    useEffect(() => {
-        const checkAdmin = async () => {
-            const result = await userService.checkAdminUser(loggedUser.id);
-            setAdmin(result);
-        };
+	const { logout } = useAuth();
 
-        if (loggedUser) {
-            setUser(loggedUser);
-            checkAdmin();
-        }
-    }, []);
+  if (hideHeader) return null;
 
-    // const checkIfAdmin = async (userId) => {
-    //     const result = await userService.checkAdminUser(userId);
-    //     setIsAdmin(result);
-    // };
+	
 
-    const handleLogout = () => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: 'You will be logged out.',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Logout',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                localStorage.removeItem("userLogged");
-                window.location.href = "/login";
-            }
-        });
-    };
+    // Obtenemos el usuario desde localStorage
+  const userData = localStorage.getItem("user");
+  const user = userData ? JSON.parse(userData) : null;
+  const isAdmin = user?.role === "admin"; 
 
-    const handleDeleteAccount = async () => {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: 'This action cannot be undone.',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Delete Account',
-            confirmButtonColor: '#d33',
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                if (user?.id) {
-                    const response = await userService.deleteUser(user.id);
-                    if (response.success) {
-                        localStorage.removeItem("userLogged");
-                        Swal.fire('Deleted!', 'Your account has been deleted.', 'success').then(() => {
-                            window.location.href = "/login";
-                        });
-                    } else {
-                        Swal.fire("Error', 'Error deleting account", 'error');
-                    }
-                }
-            }
-        });
-    };
+  return (
+		<>
+		{/* Botón hamburguesa para móvil */}
+    <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+      ☰
+    </button>
+				<ul className={`menu ${menuOpen ? "open" : ""}`}>
+					<li title="Home">
+						<Link to="/" className="fa fa-home">Home</Link>
+					</li>
+					<li title="NewFlat">
+						<Link to="/new-flat" className="fa fa-pencil">NewFlat</Link>
+					</li>
+					<li title="Profile">
+						<Link to="/profile" class="fa fa-cog" aria-hidden="true">Profile</Link>
+					</li>
 
-    const items = [
-        { label: "Home", icon: "pi pi-home", command: () => (window.location.href = "/") },
-        { label: "Profile", icon: "pi pi-user", command: () => (window.location.href = "/profile") },
-        { label: "My Flats", icon: "pi pi-building", command: () => (window.location.href = "/myflats") },
-        { label: "Favourites", icon: "pi pi-heart", command: () => (window.location.href = "/favorites") },
-    ];
+					{/* Solo visible si es admin */}
+					{isAdmin && (
+						<li title="AllUsers">
+							<Link to="/allusers" class="fa fa-users" aria-hidden="true">Users</Link>
+						</li>
+					)}
 
-    // Agregar "All Users" solo si el usuario es admin
-    if (admin) {
-        items.push({ label: "All Users", icon: "pi pi-users", command: () => (window.location.href = "/allusers") });
-    }
-
-    const end = (
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {user && (
-                <span style={{ fontSize: "1rem", fontWeight: "bold" }}>
-                    Hello, {user.firstName} {user.lastName}
-                </span>
-            )}
-            <Button
-                label="Delete Account"
-                icon="pi pi-trash"
-                className="p-button-danger p-button-outlined"
-                onClick={() => setDeleteDialog(true)}
-            />
-            <Button label="Logout" icon="pi pi-sign-out" className="p-button-outlined" onClick={handleLogout} />
-        </div>
-    );
-
-    return (
-        <div>
-            <Menubar model={items} end={end} start={<img src={logo} alt="Logo" className="logo" style={{ height: "40px" }} />} />
-
-            <Dialog
-                visible={deleteDialog}
-                onHide={() => setDeleteDialog(false)}
-                header="Confirm Deletion"
-                footer={
-                    <>
-                        <Button label="Cancel" icon="pi pi-times" onClick={() => setDeleteDialog(false)} className="p-button-text" />
-                        <Button label="Delete" icon="pi pi-trash" onClick={handleDeleteAccount} className="p-button-danger" />
-                    </>
-                }
-            >
-                <p>Are you sure you want to delete your account? This action cannot be undone.</p>
-            </Dialog>
-        </div>
-    );
+					{/* Solo usuarios logueados ven esta opción */}
+					<li title="Logout" onClick={logout}>
+						<Link to="/login" class="fa fa-sign-out" aria-hidden="true">Logout</Link>
+					</li>
+					
+				</ul>
+    </>
+  );
 };
+
+export default Header;

@@ -14,6 +14,13 @@ export class AuthController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
+      const adminEmail = "isaacburbano@gmail.com";
+      if (req.body.email === adminEmail) {
+        req.body.role = "admin";
+      } else {
+        req.body.role = "user";
+      }
+
       const user = await UserService.saveUser(req.body);
       const userToken = AuthService.getToken(user);
 
