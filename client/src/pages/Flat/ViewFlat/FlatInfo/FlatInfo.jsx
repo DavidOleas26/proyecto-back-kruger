@@ -18,10 +18,10 @@ export const FlatInfo = ({ flatId }) => {
 
   const localStorageService = new LocalStorageService();
   const userlogged = localStorageService.getLoggedUser();
+  const token = localStorageService.getUserToken();
 
   const checkFlatOwner = async () => {
     try {
-      const token = localStorageService.getUserToken();
       const response = await axios.get(`http://localhost:8080/flats/${flatId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -19,6 +19,7 @@ export const ViewFlat = () => {
   const navigation = useNavigate();
 
   const localStorageService = new LocalStorageService();
+  const token = localStorageService.getUserToken()
 
   // Si no se envia ningun flatid retornar a home
   const getFlatInfo = async () => {
@@ -27,7 +28,6 @@ export const ViewFlat = () => {
     }
 
     try {
-      const token = localStorageService.getUserToken()
 
       const response = await axios.get(`http://localhost:8080/flats/${flatId}`,{
         headers: {

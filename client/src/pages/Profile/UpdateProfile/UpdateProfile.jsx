@@ -21,11 +21,11 @@ export const UpdateProfile = () => {
 
     // Instancia del servicio de localStorage y apiImages
     const localStorageService = new LocalStorageService();
+    const token = localStorageService.getUserToken();
 
     // Obtener imagen de perfil
     const getProfileImage = async (id) => {
         try {
-            const token = localStorageService.getUserToken();
 
             const response = await axios.get(`http://localhost:8080/users/${id}/profile-image`, {
             headers: {

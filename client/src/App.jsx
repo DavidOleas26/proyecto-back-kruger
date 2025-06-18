@@ -1,5 +1,5 @@
 import './App.css';
-import { Route, Routes } from "react-router-dom";
+import { useLocation,Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header";
 import { Login } from './pages/Login/Login';
 import { Register } from './pages/Register/Register';
@@ -13,7 +13,11 @@ import { Favorites } from './pages/Main/Favorites/Favorites';
 import { MyFlats } from './pages/Main/MyFlats/MyFlats';
 import { AllUsers } from './pages/allUsers/allUsers';
 
+
 function App() {
+  const location = useLocation();
+
+  const showHeader = !['/login', '/register'].includes(location.pathname);
 
   return (
     <>

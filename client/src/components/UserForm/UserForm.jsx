@@ -41,10 +41,10 @@ export const UserForm = ({id}) => {
   );
 
   const localStorageService = new LocalStorageService();
+  const userToken = localStorageService.getUserToken();
 
   useEffect(() => { 
     if (typeForm === 'update') {
-      const userToken = localStorageService.getUserToken();
       setToken(userToken)
       getUser({userToken})
     }
